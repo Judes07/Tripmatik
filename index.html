@@ -71,13 +71,13 @@
         // SENİN FIREBASE AYARLARIN
         // =================================================================
         const SENIN_FIREBASE_AYARLARIN = {
-            apiKey: "AIzaSyB3EP3nPv1j0ayEQq3oDGWGknvwi8ikX1Q",
-            authDomain: "trip-d6472.firebaseapp.com",
-            projectId: "trip-d6472",
-            storageBucket: "trip-d6472.firebasestorage.app",
-            messagingSenderId: "128376930846",
-            appId: "1:128376930846:web:e358e32a4b2325e50ea40f",
-            measurementId: "G-F2J6MRN9VP"
+             apiKey: "AIzaSyA9wecBOHX9-qtvjKgu8MPoHEb_ld-LC44",
+             authDomain: "trip-64cb9.firebaseapp.com",
+            projectId: "trip-64cb9",
+            storageBucket: "trip-64cb9.firebasestorage.app",
+            messagingSenderId: "580909327374",
+            appId: "1:580909327374:web:ce9d449e00d7b23e14885f",
+            measurementId: "G-1H5W71PNXY"
         };
         
         // Config Belirleme Mantığı
@@ -248,12 +248,19 @@
                 { r: "Canım sıkıldı, kaos lazım.", a: "Eski defterler açıldı, 2019'daki hatası hatırlatıldı." }
             ];
 
-            const handleRandomTrip = () => {
-                // Otomatik üret butonu artık direkt eklemek yerine inputları dolduracak
+            const handleRandomTrip = async () => {
+                if (!user) return;
                 const random = randomReasons[Math.floor(Math.random() * randomReasons.length)];
-                setNewReason(random.r);
-                setNewAction(random.a);
-                setIntensity(Math.floor(Math.random() * 5) + 5);
+                try {
+                    await fb.addDoc(fb.collection(fb.db, 'omos_trips'), {
+                        reason: random.r,
+                        action: random.a,
+                        date: new Date().toLocaleDateString('tr-TR'),
+                        intensity: Math.floor(Math.random() * 5) + 5,
+                        timestamp: fb.serverTimestamp(),
+                        creatorId: user.uid
+                    });
+                } catch (error) { console.error(error); }
             };
 
             const handleDelete = async (id) => {
