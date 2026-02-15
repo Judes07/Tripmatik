@@ -22,7 +22,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
         // İkon Bileşenleri (Lucide React yerine SVG kullanıyoruz)
         const Heart = ({ size = 24, className = "" }) => (
@@ -48,19 +48,32 @@
         );
 
         function App() {
-            const [trips, setTrips] = useState([
-                {
-                id: 1,
-                reason: "Mesajıma 3 dakika 12 saniye geç cevap verdi.",
-                action: "Tek kelimelik cevaplar verildi. (Peki, Ok, Tm)",
-                date: new Date().toLocaleDateString('tr-TR'),
-                intensity: 3
+            // Başlangıç durumunu localStorage'dan alıyoruz
+            const [trips, setTrips] = useState(() => {
+                const savedTrips = localStorage.getItem('omos_trips');
+                if (savedTrips) {
+                    return JSON.parse(savedTrips);
+                } else {
+                    return [
+                        {
+                            id: 1,
+                            reason: "Mesajıma 3 dakika 12 saniye geç cevap verdi.",
+                            action: "Tek kelimelik cevaplar verildi. (Peki, Ok, Tm)",
+                            date: new Date().toLocaleDateString('tr-TR'),
+                            intensity: 3
+                        }
+                    ];
                 }
-            ]);
+            });
 
             const [newReason, setNewReason] = useState("");
             const [newAction, setNewAction] = useState("");
             const [intensity, setIntensity] = useState(5);
+
+            // Trips değiştiğinde localStorage'ı güncelle
+            useEffect(() => {
+                localStorage.setItem('omos_trips', JSON.stringify(trips));
+            }, [trips]);
 
             // Komik hazır tripler veritabanı
             const randomReasons = [
