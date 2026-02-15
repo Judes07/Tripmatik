@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ömoş Tripmatik - Online</title>
+    <title>Ömoş Tripmatik 2.0</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React ve ReactDOM -->
@@ -13,7 +13,10 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap');
+        
+        body { font-family: 'Nunito', sans-serif; }
+        
         .loading-dots:after {
             content: '.';
             animation: dots 1.5s steps(5, end) infinite;
@@ -24,14 +27,46 @@
             60% { content: '...'; }
             80%, 100% { content: ''; }
         }
+
+        /* Hareketli Arka Plan Balonları */
+        .blob {
+            position: absolute;
+            filter: blur(40px);
+            z-index: -1;
+            opacity: 0.6;
+            animation: float 10s infinite alternate;
+        }
+        .blob-1 { top: 0; left: 0; width: 300px; height: 300px; background: #fecdd3; border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+        .blob-2 { bottom: 0; right: 0; width: 350px; height: 350px; background: #e9d5ff; border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation-delay: -5s; }
+        .blob-3 { top: 40%; left: 40%; width: 200px; height: 200px; background: #bfdbfe; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; animation-duration: 15s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(30px, 50px) rotate(10deg); }
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-pink-100 via-rose-50 to-purple-100 min-h-screen">
+<body class="bg-gradient-to-br from-pink-50 via-white to-purple-50 min-h-screen relative overflow-x-hidden">
     
-    <!-- Başlangıçta görünecek yükleme ekranı -->
-    <div id="root" class="flex flex-col items-center justify-center min-h-screen text-rose-500">
-        <div class="text-2xl font-bold mb-2">Ömoş Tripmatik Hazırlanıyor...</div>
-        <div class="loading-dots text-sm opacity-75">Sistem yükleniyor</div>
+    <!-- Dekoratif Arka Plan -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- Yükleme Ekranı -->
+    <div id="root" class="min-h-screen">
+        <div class="flex flex-col items-center justify-center min-h-screen text-rose-500">
+            <div class="text-3xl font-black mb-2 animate-bounce">Ömoş Tripmatik</div>
+            <div class="loading-dots text-sm font-bold opacity-75">Sistem hazırlanıyor</div>
+        </div>
     </div>
 
     <!-- Hata Yakalayıcı -->
@@ -39,20 +74,17 @@
         window.onerror = function(msg, url, line, col, error) {
             const root = document.getElementById('root');
             let friendlyMsg = msg;
-            
-            // Hata mesajlarını Türkçeleştirme
             if (msg.includes("Firebase config")) friendlyMsg = "Veritabanı ayarları eksik veya hatalı.";
-            if (msg.includes("permission-denied")) friendlyMsg = "Veritabanı izni reddedildi. Firebase konsolundan Firestore kurallarını kontrol edin.";
-            if (msg.includes("auth/configuration-not-found") || msg.includes("auth/operation-not-allowed")) {
-                friendlyMsg = "Giriş yapılamadı. Firebase Konsolunda 'Authentication' -> 'Sign-in method' kısmından 'Anonymous' (Anonim) seçeneğini etkinleştirdiğinizden emin olun.";
-            }
+            if (msg.includes("permission-denied")) friendlyMsg = "Veritabanı izni reddedildi.";
             
             root.innerHTML = `
-                <div class="bg-white p-6 rounded-2xl shadow-xl max-w-md mx-4 border-l-4 border-red-500">
-                    <h3 class="text-xl font-bold text-red-600 mb-2">Bir Hata Oluştu!</h3>
-                    <p class="text-gray-700 mb-4 text-sm">${friendlyMsg}</p>
-                    <div class="bg-gray-100 p-3 rounded text-xs text-gray-500 font-mono break-all">
-                        Teknik Detay: ${msg}
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="glass p-6 rounded-3xl shadow-xl max-w-md w-full border-l-4 border-rose-500">
+                        <h3 class="text-xl font-bold text-rose-600 mb-2">Ops! Bir Sorun Var</h3>
+                        <p class="text-slate-700 mb-4 text-sm">${friendlyMsg}</p>
+                        <div class="bg-rose-50 p-3 rounded-lg text-xs text-rose-800 font-mono break-all">
+                            ${msg}
+                        </div>
                     </div>
                 </div>
             `;
@@ -60,11 +92,11 @@
         };
     </script>
 
-    <!-- 1. ADIM: Firebase Modüllerini Yükle ve Global Yap -->
+    <!-- Firebase Modüller -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
         // =================================================================
@@ -80,146 +112,102 @@
             measurementId: "G-1H5W71PNXY"
         };
         
-        // Config Belirleme Mantığı
         let firebaseConfig;
         let activeAppId = 'omos-trip-app';
-        let useEnvToken = true; // Varsayılan olarak ortam token'ını kullanmaya çalış
+        let useEnvToken = true;
 
         try {
             if (SENIN_FIREBASE_AYARLARIN) {
-                // Senin ayarlarını kullan
                 firebaseConfig = SENIN_FIREBASE_AYARLARIN;
-                // Kendi projemizi kullanıyoruz, ortam token'ını KESİNLİKLE yoksaymalıyız
-                // Çünkü o token bu projeye ait değil.
                 useEnvToken = false; 
             } else if (typeof __firebase_config !== 'undefined') {
-                // Yedek (Test ortamı)
                 firebaseConfig = JSON.parse(__firebase_config);
                 if (typeof __app_id !== 'undefined') activeAppId = __app_id;
             } else {
                 throw new Error("Firebase config bulunamadı.");
             }
-        } catch (e) {
-            console.error("Firebase Kurulum Hatası:", e);
-            throw e;
-        }
+        } catch (e) { console.error(e); throw e; }
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        // Analytics başlatma
-        try {
-            const analytics = getAnalytics(app);
-        } catch (e) {
-            console.log("Analytics başlatılamadı (önemsiz):", e);
-        }
+        try { const analytics = getAnalytics(app); } catch (e) {}
 
         window.Firebase = {
             auth, db, appId: activeAppId,
             signInAnonymously, signInWithCustomToken, onAuthStateChanged,
-            collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, serverTimestamp,
-            // Eğer kendi config'imizi kullanıyorsak initialToken'ı null yapıyoruz
+            collection, addDoc, onSnapshot, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp,
             initialToken: (typeof __initial_auth_token !== 'undefined' && useEnvToken) ? __initial_auth_token : null
         };
 
         window.dispatchEvent(new Event('firebase-ready'));
     </script>
 
-    <!-- 2. ADIM: React Uygulaması -->
+    <!-- React Uygulaması -->
     <script type="text/babel">
         const { useState, useEffect } = React;
 
         // İkonlar
         const Icons = {
-            HeartCrack: ({ size = 24, className = "" }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="m12 13-3-3 2-2-1.5-1.5"/></svg>
-            ),
-            Plus: ({ size = 24, className = "" }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-            ),
-            Trash2: ({ size = 24, className = "" }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-            ),
-            Zap: ({ size = 24, className = "" }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            ),
-            AlertCircle: ({ size = 24, className = "" }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-            ),
-            Sparkles: ({ size = 24, className = "" }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 5h4"/><path d="M3 9h4"/></svg>
-            ),
-            Cloud: ({ size = 24, className = "" }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17.5 19c0-3.037-2.463-5.5-5.5-5.5S6.5 15.963 6.5 19"/><path d="M20.97 19h1.53a4.5 4.5 0 0 0 .56-8.97A9.04 9.04 0 0 0 8 9.32a7.5 7.5 0 0 0-3.5 14.18H17.5"/></svg>
-            ),
-            Heart: ({ size = 24, className = "" }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-            )
+            HeartCrack: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="m12 13-3-3 2-2-1.5-1.5"/></svg>,
+            Trash2: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>,
+            Zap: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+            CheckCircle: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+            ChartPie: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>,
+            Smile: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>,
+            // Eksik ikonlar eklendi
+            Plus: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>,
+            Sparkles: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 5h4"/><path d="M3 9h4"/></svg>
         };
+
+        const MOODS = [
+            { id: 'angry', emoji: '😡', label: 'Sinirli', color: 'bg-red-100 border-red-300' },
+            { id: 'sad', emoji: '🥺', label: 'Kırgın', color: 'bg-blue-100 border-blue-300' },
+            { id: 'ignored', emoji: '😒', label: 'Umursamaz', color: 'bg-gray-100 border-gray-300' },
+            { id: 'fire', emoji: '🔥', label: 'Alev Alev', color: 'bg-orange-100 border-orange-300' },
+            { id: 'cool', emoji: '😎', label: 'Haval', color: 'bg-purple-100 border-purple-300' }
+        ];
 
         function App() {
             const [trips, setTrips] = useState([]);
             const [newReason, setNewReason] = useState("");
             const [newAction, setNewAction] = useState("");
             const [intensity, setIntensity] = useState(5);
+            const [selectedMood, setSelectedMood] = useState(MOODS[0]);
             const [user, setUser] = useState(null);
             const [loading, setLoading] = useState(true);
 
-            // Firebase'i güvenli şekilde al
             const fb = window.Firebase;
 
             useEffect(() => {
                 if (!fb) return;
-                
                 const initAuth = async () => {
                     try {
-                        // Eğer custom config kullanıyorsak initialToken null olacaktır
-                        // Bu durumda direkt signInAnonymously çalışır
-                        if (fb.initialToken) {
-                            await fb.signInWithCustomToken(fb.auth, fb.initialToken);
-                        } else {
-                            await fb.signInAnonymously(fb.auth);
-                        }
-                    } catch (err) {
-                        console.error("Giriş hatası:", err);
-                    }
+                        if (fb.initialToken) await fb.signInWithCustomToken(fb.auth, fb.initialToken);
+                        else await fb.signInAnonymously(fb.auth);
+                    } catch (err) { console.error("Giriş hatası:", err); }
                 };
                 initAuth();
-                
-                const unsubscribe = fb.onAuthStateChanged(fb.auth, (currentUser) => {
-                    setUser(currentUser);
-                });
+                const unsubscribe = fb.onAuthStateChanged(fb.auth, (u) => setUser(u));
                 return () => unsubscribe();
             }, []);
 
             useEffect(() => {
                 if (!user || !fb) return;
-
-                const collectionPath = 'omos_trips'; 
-                
-                const q = fb.query(fb.collection(fb.db, collectionPath));
-                
+                const q = fb.query(fb.collection(fb.db, 'omos_trips'));
                 const unsubscribe = fb.onSnapshot(q, (snapshot) => {
-                    const loadedTrips = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    // Tarihe göre sırala
+                    const loadedTrips = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     loadedTrips.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-                    
                     setTrips(loadedTrips);
                     setLoading(false);
-                }, (error) => {
-                    console.error("Veri çekme hatası:", error);
-                    setLoading(false);
-                });
-
+                }, () => setLoading(false));
                 return () => unsubscribe();
             }, [user]);
 
             const handleAddTrip = async () => {
-                if (!newReason || !newAction || !user) return;
+                if (!user) { alert("Bağlantı yok."); return; }
+                if (!newReason || !newAction) return;
                 
                 try {
                     await fb.addDoc(fb.collection(fb.db, 'omos_trips'), {
@@ -227,15 +215,30 @@
                         action: newAction,
                         date: new Date().toLocaleDateString('tr-TR'),
                         intensity: intensity,
+                        mood: selectedMood,
+                        resolved: false,
                         timestamp: fb.serverTimestamp(),
                         creatorId: user.uid
                     });
                     setNewReason("");
                     setNewAction("");
                     setIntensity(5);
-                } catch (error) {
-                    console.error("Hata:", error);
-                    alert("Kayıt başarısız oldu. Firestore kurallarını kontrol edin.");
+                    setSelectedMood(MOODS[0]);
+                } catch (error) { alert("Kayıt başarısız: " + error.message); }
+            };
+
+            const toggleResolve = async (id, currentStatus) => {
+                if(!user) return;
+                try {
+                    const tripRef = fb.doc(fb.db, 'omos_trips', id);
+                    await fb.updateDoc(tripRef, { resolved: !currentStatus });
+                } catch (e) { console.error(e); }
+            };
+
+            const handleDelete = async (id) => {
+                if(!user) return;
+                if(confirm("Bu trip kaydını silmek istediğine emin misin?")) {
+                    try { await fb.deleteDoc(fb.doc(fb.db, 'omos_trips', id)); } catch (e) { console.error(e); }
                 }
             };
 
@@ -244,120 +247,187 @@
                 { r: "Instagram'da o kızın fotosunu beğenmiş.", a: "Bütün fotoğrafları arşivlendi, biyografi silindi." },
                 { r: "Acıktım ama ne yiyeceğimi o da bilmiyor.", a: "'Sen beni hiç düşünmüyorsun' nutuğu çekildi." },
                 { r: "Bana 'sen bilirsin' dedi.", a: "Kıyamet koparıldı." },
-                { r: "Nefes alışı çok gürültülüydü.", a: "Odayı terk etme eylemi gerçekleştirildi." },
-                { r: "Canım sıkıldı, kaos lazım.", a: "Eski defterler açıldı, 2019'daki hatası hatırlatıldı." }
+                { r: "Nefes alışı çok gürültülüydü.", a: "Odayı terk etme eylemi gerçekleştirildi." }
             ];
 
             const handleRandomTrip = () => {
-                // SADECE STATE GÜNCELLİYORUZ (Kutucukları dolduruyoruz)
                 const random = randomReasons[Math.floor(Math.random() * randomReasons.length)];
                 setNewReason(random.r);
                 setNewAction(random.a);
                 setIntensity(Math.floor(Math.random() * 5) + 5);
-                // Burada veritabanı kayıt işlemi YOK
+                setSelectedMood(MOODS[Math.floor(Math.random() * MOODS.length)]);
             };
 
-            const handleDelete = async (id) => {
-                if(!user) return;
-                try {
-                    await fb.deleteDoc(fb.doc(fb.db, 'omos_trips', id));
-                } catch (error) { console.error(error); }
-            };
-
-            const getIntensityColor = (level) => {
-                if (level <= 3) return "bg-blue-100 text-blue-700 border-blue-200";
-                if (level <= 7) return "bg-orange-100 text-orange-700 border-orange-200";
-                return "bg-red-100 text-red-700 border-red-200 animate-pulse";
-            };
+            // İstatistikler
+            const totalTrips = trips.length;
+            const resolvedTrips = trips.filter(t => t.resolved).length;
+            const successRate = totalTrips > 0 ? Math.round((resolvedTrips / totalTrips) * 100) : 0;
 
             return (
-                <div className="p-4">
-                    <div className="max-w-md mx-auto space-y-6">
-                        {/* Header */}
-                        <header className="text-center py-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-pink-200 sticky top-4 z-10 relative overflow-hidden">
-                            <div className="absolute top-2 right-2 flex items-center gap-1 bg-green-100 px-2 py-1 rounded-full border border-green-200">
-                                <div className={`w-2 h-2 rounded-full ${user ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-                                <span className="text-[10px] text-green-700 font-bold uppercase tracking-wider">
-                                    {loading ? '...' : 'Online'}
-                                </span>
-                            </div>
-                            <div className="flex justify-center mb-2">
-                                <Icons.HeartCrack className="w-12 h-12 text-rose-500 fill-rose-200" />
-                            </div>
-                            <h1 className="text-3xl font-black text-rose-600 tracking-tight">Ömoş Tripmatik</h1>
-                            <p className="text-rose-400 font-medium text-sm mt-1">"Bulutlara yazılan sitemler..."</p>
-                        </header>
-
-                        {/* Form */}
-                        <div className="bg-white rounded-3xl shadow-lg p-6 border border-pink-100 relative">
-                            {!user && (
-                                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex items-center justify-center rounded-3xl">
-                                    <span className="text-rose-500 font-bold loading-dots">Bağlanıyor</span>
-                                </div>
-                            )}
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-lg font-bold text-slate-700 flex items-center gap-2">
-                                    <Icons.Cloud className="w-5 h-5 text-sky-500" />
-                                    Yeni Trip Yükle
-                                </h2>
-                                <button onClick={handleRandomTrip} className="text-xs bg-purple-100 text-purple-600 px-3 py-1 rounded-full font-bold hover:bg-purple-200 flex items-center gap-1">
-                                    <Icons.Zap size={14} /> Otomatik
-                                </button>
-                            </div>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-400 mb-1 uppercase">Trip Sebebi</label>
-                                    <textarea value={newReason} onChange={(e) => setNewReason(e.target.value)} placeholder="Örn: Mesajıma 'ok' yazdı..." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none h-20" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-400 mb-1 uppercase">Uygulanan Tarife</label>
-                                    <input type="text" value={newAction} onChange={(e) => setNewAction(e.target.value)} placeholder="Örn: 2 saat sessiz kalındı." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300" />
-                                </div>
-                                <div>
-                                    <div className="flex justify-between mb-1">
-                                        <label className="text-xs font-bold text-slate-400 uppercase">Şiddet</label>
-                                        <span className="text-xs font-bold text-rose-500">{intensity}/10</span>
-                                    </div>
-                                    <input type="range" min="1" max="10" value={intensity} onChange={(e) => setIntensity(Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-rose-500" />
-                                </div>
-                                <button onClick={handleAddTrip} disabled={!newReason || !newAction} className="w-full bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all shadow-md flex justify-center items-center gap-2">
-                                    <Icons.Plus size={20} /> Listeye Ekle
-                                </button>
+                <div className="p-4 md:p-8 max-w-2xl mx-auto">
+                    
+                    {/* Header */}
+                    <header className="text-center mb-8 relative z-10">
+                        <div className="inline-block relative">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-rose-400 to-purple-400 rounded-full blur opacity-30 animate-pulse"></div>
+                            <div className="relative bg-white/90 backdrop-blur-sm rounded-full p-4 shadow-lg border border-rose-100">
+                                <Icons.HeartCrack className="w-12 h-12 text-rose-500" />
                             </div>
                         </div>
+                        <h1 className="text-4xl font-black text-slate-800 mt-4 tracking-tight drop-shadow-sm">
+                            Ömoş <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-purple-600">Tripmatik</span>
+                        </h1>
+                        <p className="text-slate-500 font-medium mt-1">"Bulutlara yazılan sitemler, kalbe işleyen tripler..."</p>
+                    </header>
 
-                        {/* Liste */}
-                        <div className="space-y-4 pb-12">
-                            <h3 className="text-slate-500 font-bold ml-2 text-sm uppercase tracking-wider">Kayıtlar</h3>
-                            {loading ? (
-                                <div className="text-center py-8 text-rose-400 font-bold loading-dots">Yükleniyor</div>
-                            ) : trips.length === 0 ? (
-                                <div className="text-center py-10 bg-white/50 rounded-3xl border-2 border-dashed border-slate-200">
-                                    <Icons.Heart className="w-12 h-12 text-slate-200 mx-auto mb-2" />
-                                    <p className="text-slate-400 font-medium">Tertemiz...</p>
-                                </div>
-                            ) : (
-                                trips.map((trip) => (
-                                    <div key={trip.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 relative group">
-                                        <div className="absolute top-4 right-4">
-                                            <span className={`text-[10px] font-bold px-2 py-1 rounded-full border ${getIntensityColor(trip.intensity)}`}>Seviye: {trip.intensity}</span>
-                                        </div>
-                                        <div className="pr-16">
-                                            <div className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
-                                                <Icons.AlertCircle size={12} /> {trip.date}
-                                            </div>
-                                            <h4 className="font-bold text-slate-800 text-lg leading-tight mb-2">"{trip.reason}"</h4>
-                                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                                <p className="text-slate-600 text-sm italic"><span className="font-bold text-rose-400 not-italic">Sonuç: </span>{trip.action}</p>
-                                            </div>
-                                        </div>
-                                        <button onClick={() => handleDelete(trip.id)} className="absolute bottom-4 right-4 p-2 text-slate-300 hover:text-red-500 rounded-full transition-colors">
-                                            <Icons.Trash2 size={18} />
+                    {/* Ana Form Kartı */}
+                    <div className="glass rounded-3xl shadow-xl shadow-rose-100/50 p-6 md:p-8 mb-8 relative z-10 transition-all hover:shadow-2xl hover:shadow-rose-200/50">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-slate-700 flex items-center gap-2">
+                                <span className="bg-rose-100 p-2 rounded-xl text-rose-500"><Icons.Zap size={20} /></span>
+                                Yeni Trip Ekle
+                            </h2>
+                            <button onClick={handleRandomTrip} className="text-xs bg-purple-50 text-purple-600 px-4 py-2 rounded-full font-bold hover:bg-purple-100 transition-colors flex items-center gap-1 border border-purple-100">
+                                <Icons.Sparkles size={14} /> Otomatik Doldur
+                            </button>
+                        </div>
+
+                        <div className="space-y-5">
+                            {/* Mood Selector */}
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">Trip Modu</label>
+                                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                    {MOODS.map(mood => (
+                                        <button 
+                                            key={mood.id}
+                                            onClick={() => setSelectedMood(mood)}
+                                            className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all min-w-[70px] ${selectedMood.id === mood.id ? 'border-rose-500 bg-rose-50 scale-105' : 'border-transparent bg-slate-50 hover:bg-slate-100 text-slate-400 grayscale hover:grayscale-0'}`}
+                                        >
+                                            <span className="text-2xl mb-1">{mood.emoji}</span>
+                                            <span className="text-[10px] font-bold">{mood.label}</span>
                                         </button>
-                                    </div>
-                                ))
-                            )}
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wide">Sebep</label>
+                                    <textarea value={newReason} onChange={(e) => setNewReason(e.target.value)} placeholder="Bugün yine ne oldu?" className="w-full p-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:bg-white transition-all resize-none h-24" />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wide">Sonuç (Ceza)</label>
+                                    <input type="text" value={newAction} onChange={(e) => setNewAction(e.target.value)} placeholder="Örn: 3 saat sessizlik..." className="w-full p-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:bg-white transition-all" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="flex justify-between mb-2">
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Sinir Seviyesi</label>
+                                    <span className="text-xs font-bold text-rose-500 bg-rose-100 px-2 py-0.5 rounded-md">{intensity} / 10</span>
+                                </div>
+                                <input type="range" min="1" max="10" value={intensity} onChange={(e) => setIntensity(Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-rose-500" />
+                            </div>
+
+                            <button onClick={handleAddTrip} disabled={!newReason || !newAction} className="w-full bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-rose-500/30 flex justify-center items-center gap-2 transform active:scale-[0.98]">
+                                <Icons.Plus size={20} /> Kaydet ve Yayınla
+                            </button>
                         </div>
+                    </div>
+
+                    {/* İstatistikler */}
+                    <div className="grid grid-cols-3 gap-3 mb-8">
+                        <div className="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                            <span className="text-2xl font-black text-rose-500">{totalTrips}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase mt-1">Toplam</span>
+                        </div>
+                        <div className="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                            <span className="text-2xl font-black text-purple-500">{resolvedTrips}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase mt-1">Çözülen</span>
+                        </div>
+                        <div className="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden">
+                             <div className="absolute inset-0 bg-green-50 opacity-50 z-0"></div>
+                            <span className="text-2xl font-black text-emerald-500 relative z-10">%{successRate}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase mt-1 relative z-10">Barışma</span>
+                        </div>
+                    </div>
+
+                    {/* Liste */}
+                    <div className="space-y-4 pb-20">
+                        <h3 className="text-slate-500 font-bold ml-2 text-sm uppercase tracking-wider flex items-center gap-2">
+                             <Icons.ChartPie size={16} /> Trip Geçmişi
+                        </h3>
+                        
+                        {loading ? (
+                            <div className="text-center py-12 text-rose-400 font-bold loading-dots">Veriler Buluttan İniyor</div>
+                        ) : trips.length === 0 ? (
+                            <div className="glass text-center py-12 rounded-3xl border-2 border-dashed border-slate-200">
+                                <Icons.Smile className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                                <p className="text-slate-400 font-medium">İnanılmaz! Hiç trip yok.</p>
+                                <p className="text-slate-300 text-xs mt-1">(Fırtına öncesi sessizlik olabilir)</p>
+                            </div>
+                        ) : (
+                            trips.map((trip) => (
+                                <div key={trip.id} className={`glass rounded-2xl p-5 transition-all hover:shadow-md relative group border-l-4 ${trip.resolved ? 'border-l-emerald-400 opacity-75 grayscale-[0.3]' : 'border-l-rose-500'}`}>
+                                    
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="flex items-center gap-2">
+                                            {trip.mood && (
+                                                <span className="text-2xl" title={trip.mood.label}>{trip.mood.emoji}</span>
+                                            )}
+                                            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">
+                                                {trip.date}
+                                            </span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {/* Resolve Button */}
+                                            <button 
+                                                onClick={() => toggleResolve(trip.id, trip.resolved)}
+                                                className={`p-1.5 rounded-full transition-colors ${trip.resolved ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400 hover:bg-emerald-100 hover:text-emerald-500'}`}
+                                                title={trip.resolved ? "Çözüldü" : "Tatlıya Bağla"}
+                                            >
+                                                <Icons.CheckCircle size={18} />
+                                            </button>
+                                            
+                                            {/* Delete Button */}
+                                            <button 
+                                                onClick={() => handleDelete(trip.id)}
+                                                className="p-1.5 rounded-full bg-slate-100 text-slate-400 hover:bg-red-100 hover:text-red-500 transition-colors"
+                                            >
+                                                <Icons.Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="pr-2 mt-2">
+                                        <h4 className={`font-bold text-lg leading-tight mb-2 ${trip.resolved ? 'text-slate-500 line-through decoration-slate-300' : 'text-slate-800'}`}>
+                                            "{trip.reason}"
+                                        </h4>
+                                        <div className={`p-3 rounded-xl text-sm ${trip.resolved ? 'bg-emerald-50/50 text-emerald-700' : 'bg-rose-50/50 text-rose-700'}`}>
+                                            <span className="font-bold opacity-70">Sonuç: </span>
+                                            {trip.action}
+                                        </div>
+                                    </div>
+
+                                    {/* Intensity Indicator */}
+                                    <div className="mt-3 flex items-center gap-2">
+                                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full rounded-full ${trip.resolved ? 'bg-emerald-400' : 'bg-rose-500'}`} 
+                                                style={{width: `${trip.intensity * 10}%`}}
+                                            ></div>
+                                        </div>
+                                        <span className="text-[10px] font-bold text-slate-400">{trip.intensity}/10</span>
+                                    </div>
+                                    
+                                    {trip.resolved && (
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-10 transition-opacity">
+                                            <Icons.CheckCircle className="w-32 h-32 text-emerald-500" />
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             );
@@ -372,10 +442,7 @@
             initApp();
         } else {
             window.addEventListener('firebase-ready', initApp);
-            // 3 Saniye içinde Firebase yüklenmezse yine de dene
-            setTimeout(() => {
-                if (!window.Firebase) console.warn("Firebase gecikti...");
-            }, 3000);
+            setTimeout(() => { if (!window.Firebase) console.warn("Firebase gecikti..."); }, 3000);
         }
     </script>
 </body>
