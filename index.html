@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ömoş Tripmatik</title>
+    <title>Ömoş Tripmatik - Online</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React ve ReactDOM -->
@@ -13,21 +13,62 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
         }
     </style>
 </head>
 <body class="bg-gradient-to-br from-pink-100 via-rose-50 to-purple-100 min-h-screen">
     <div id="root"></div>
 
+    <!-- 1. ADIM: Firebase Modüllerini Yükle ve Global Yap -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'omos-trip-app';
+
+        // Fonksiyonları global window nesnesine ekle ki Babel scripti erişebilsin
+        window.Firebase = {
+            auth,
+            db,
+            appId,
+            signInAnonymously,
+            signInWithCustomToken,
+            onAuthStateChanged,
+            collection,
+            addDoc,
+            onSnapshot,
+            deleteDoc,
+            doc,
+            query,
+            orderBy,
+            serverTimestamp,
+            initialToken: typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null
+        };
+
+        // React'e "Hazırız" sinyali gönder
+        window.dispatchEvent(new Event('firebase-ready'));
+    </script>
+
+    <!-- 2. ADIM: React Uygulaması (Babel ile JSX Derleme) -->
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // İkon Bileşenleri (Lucide React yerine SVG kullanıyoruz)
-        const Heart = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-        );
+        // İkonlar
         const HeartCrack = ({ size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="m12 13-3-3 2-2-1.5-1.5"/></svg>
         );
@@ -44,38 +85,97 @@
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
         );
         const Sparkles = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 5h4"/><path d="M3 9h4"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 5h4"/><path d="M3 9h4"/></svg>
+        );
+        const Cloud = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17.5 19c0-3.037-2.463-5.5-5.5-5.5S6.5 15.963 6.5 19"/><path d="M20.97 19h1.53a4.5 4.5 0 0 0 .56-8.97A9.04 9.04 0 0 0 8 9.32a7.5 7.5 0 0 0-3.5 14.18H17.5"/></svg>
+        );
+        const Heart = ({ size = 24, className = "" }) => (
+             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
         );
 
         function App() {
-            // Başlangıç durumunu localStorage'dan alıyoruz
-            const [trips, setTrips] = useState(() => {
-                const savedTrips = localStorage.getItem('omos_trips');
-                if (savedTrips) {
-                    return JSON.parse(savedTrips);
-                } else {
-                    return [
-                        {
-                            id: 1,
-                            reason: "Mesajıma 3 dakika 12 saniye geç cevap verdi.",
-                            action: "Tek kelimelik cevaplar verildi. (Peki, Ok, Tm)",
-                            date: new Date().toLocaleDateString('tr-TR'),
-                            intensity: 3
-                        }
-                    ];
-                }
-            });
-
+            const [trips, setTrips] = useState([]);
             const [newReason, setNewReason] = useState("");
             const [newAction, setNewAction] = useState("");
             const [intensity, setIntensity] = useState(5);
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
 
-            // Trips değiştiğinde localStorage'ı güncelle
+            // Firebase servislerini window'dan al
+            const { 
+                auth, db, appId, 
+                signInAnonymously, signInWithCustomToken, onAuthStateChanged,
+                collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, serverTimestamp, initialToken 
+            } = window.Firebase;
+
+            // 1. Firebase Auth Başlatma
             useEffect(() => {
-                localStorage.setItem('omos_trips', JSON.stringify(trips));
-            }, [trips]);
+                const initAuth = async () => {
+                    if (initialToken) {
+                        await signInWithCustomToken(auth, initialToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                };
+                initAuth();
+                
+                const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+                    setUser(currentUser);
+                });
+                return () => unsubscribe();
+            }, []);
 
-            // Komik hazır tripler veritabanı
+            // 2. Firestore Veri Dinleme (Real-time)
+            useEffect(() => {
+                if (!user) return;
+
+                // Public koleksiyonu kullanıyoruz ki herkes aynı listeyi görsün
+                const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'omos_trips'));
+                
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const loadedTrips = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    // Javascript tarafında sıralama (En yeniden en eskiye)
+                    loadedTrips.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                    
+                    setTrips(loadedTrips);
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Veri çekme hatası:", error);
+                    setLoading(false);
+                });
+
+                return () => unsubscribe();
+            }, [user]);
+
+            // Trip Ekleme (Sunucuya Yazma)
+            const handleAddTrip = async () => {
+                if (!newReason || !newAction || !user) return;
+                
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'omos_trips'), {
+                        reason: newReason,
+                        action: newAction,
+                        date: new Date().toLocaleDateString('tr-TR'),
+                        intensity: intensity,
+                        timestamp: serverTimestamp(), // Sunucu saati
+                        creatorId: user.uid // Kimin eklediği (gizli bilgi)
+                    });
+                    
+                    // Formu temizle
+                    setNewReason("");
+                    setNewAction("");
+                    setIntensity(5);
+                } catch (error) {
+                    console.error("Trip eklenirken hata:", error);
+                    alert("Sunucuya bağlanırken bir sorun oluştu.");
+                }
+            };
+
+            // Otomatik Trip (Yine sunucuya yazar)
             const randomReasons = [
                 { r: "Rüyamda beni aldattığını gördüm.", a: "Sabah uyanınca yüzüne bakılmadı, kapılar sert kapatıldı." },
                 { r: "Instagram'da o kızın fotosunu beğenmiş.", a: "Bütün fotoğrafları arşivlendi, biyografi silindi." },
@@ -86,32 +186,32 @@
                 { r: "Giydiğim kazağı fark etmedi.", a: "Sessizlik yemini edildi." },
             ];
 
-            const handleAddTrip = () => {
-                if (!newReason || !newAction) return;
-                
-                const newTrip = {
-                id: Date.now(),
-                reason: newReason,
-                action: newAction,
-                date: new Date().toLocaleDateString('tr-TR'),
-                intensity: intensity
-                };
-
-                setTrips([newTrip, ...trips]);
-                setNewReason("");
-                setNewAction("");
-                setIntensity(5);
-            };
-
-            const handleRandomTrip = () => {
+            const handleRandomTrip = async () => {
+                if (!user) return;
                 const random = randomReasons[Math.floor(Math.random() * randomReasons.length)];
-                setNewReason(random.r);
-                setNewAction(random.a);
-                setIntensity(Math.floor(Math.random() * 5) + 5); // 5-10 arası rastgele şiddet
+                
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'omos_trips'), {
+                        reason: random.r,
+                        action: random.a,
+                        date: new Date().toLocaleDateString('tr-TR'),
+                        intensity: Math.floor(Math.random() * 5) + 5,
+                        timestamp: serverTimestamp(),
+                        creatorId: user.uid
+                    });
+                } catch (error) {
+                    console.error("Otomatik trip hatası:", error);
+                }
             };
 
-            const handleDelete = (id) => {
-                setTrips(trips.filter(t => t.id !== id));
+            // Trip Silme (Sunucudan Silme)
+            const handleDelete = async (id) => {
+                if(!user) return;
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'omos_trips', id));
+                } catch (error) {
+                    console.error("Silme hatası:", error);
+                }
             };
 
             const getIntensityColor = (level) => {
@@ -125,74 +225,87 @@
                 <div className="max-w-md mx-auto space-y-6">
                     
                     {/* Header */}
-                    <header className="text-center py-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-pink-200 sticky top-4 z-10">
-                    <div className="flex justify-center mb-2">
-                        <HeartCrack className="w-12 h-12 text-rose-500 fill-rose-200" />
-                    </div>
-                    <h1 className="text-3xl font-black text-rose-600 tracking-tight">Ömoş Tripmatik</h1>
-                    <p className="text-rose-400 font-medium text-sm mt-1">"Haklısın aşkım, sen haklısın."</p>
+                    <header className="text-center py-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-pink-200 sticky top-4 z-10 relative overflow-hidden">
+                        <div className="absolute top-2 right-2 flex items-center gap-1 bg-green-100 px-2 py-1 rounded-full border border-green-200">
+                             <div className={`w-2 h-2 rounded-full ${user ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                             <span className="text-[10px] text-green-700 font-bold uppercase tracking-wider">
+                                {loading ? 'Bağlanıyor...' : 'Online'}
+                             </span>
+                        </div>
+
+                        <div className="flex justify-center mb-2">
+                            <HeartCrack className="w-12 h-12 text-rose-500 fill-rose-200" />
+                        </div>
+                        <h1 className="text-3xl font-black text-rose-600 tracking-tight">Ömoş Tripmatik</h1>
+                        <p className="text-rose-400 font-medium text-sm mt-1">"Bulutlara yazılan sitemler..."</p>
                     </header>
 
                     {/* Trip Oluşturucu Form */}
-                    <div className="bg-white rounded-3xl shadow-lg p-6 border border-pink-100">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-bold text-slate-700 flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-yellow-500" />
-                        Yeni Trip Yükle
-                        </h2>
-                        <button 
-                        onClick={handleRandomTrip}
-                        className="text-xs bg-purple-100 text-purple-600 px-3 py-1 rounded-full font-bold hover:bg-purple-200 transition-colors flex items-center gap-1"
-                        >
-                        <Zap size={14} /> Otomatik Üret
-                        </button>
-                    </div>
+                    <div className="bg-white rounded-3xl shadow-lg p-6 border border-pink-100 relative">
+                         {!user && (
+                            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex items-center justify-center rounded-3xl">
+                                <span className="text-rose-500 font-bold loading-dots">Sunucuya Bağlanılıyor</span>
+                            </div>
+                         )}
 
-                    <div className="space-y-4">
-                        <div>
-                        <label className="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wide">Trip Sebebi</label>
-                        <textarea 
-                            value={newReason}
-                            onChange={(e) => setNewReason(e.target.value)}
-                            placeholder="Örn: Mesajıma 'ok' yazdı..."
-                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none h-20"
-                        />
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-bold text-slate-700 flex items-center gap-2">
+                            <Cloud className="w-5 h-5 text-sky-500" />
+                            Yeni Trip Yükle (Sunucu)
+                            </h2>
+                            <button 
+                            onClick={handleRandomTrip}
+                            className="text-xs bg-purple-100 text-purple-600 px-3 py-1 rounded-full font-bold hover:bg-purple-200 transition-colors flex items-center gap-1"
+                            >
+                            <Zap size={14} /> Otomatik Üret
+                            </button>
                         </div>
 
-                        <div>
-                        <label className="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wide">Uygulanan Tarife</label>
-                        <input 
-                            type="text"
-                            value={newAction}
-                            onChange={(e) => setNewAction(e.target.value)}
-                            placeholder="Örn: 2 saat sessiz kalındı."
-                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
-                        />
-                        </div>
+                        <div className="space-y-4">
+                            <div>
+                            <label className="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wide">Trip Sebebi</label>
+                            <textarea 
+                                value={newReason}
+                                onChange={(e) => setNewReason(e.target.value)}
+                                placeholder="Örn: Mesajıma 'ok' yazdı..."
+                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none h-20"
+                            />
+                            </div>
 
-                        <div>
-                        <div className="flex justify-between mb-1">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Trip Şiddeti (1-10)</label>
-                            <span className="text-xs font-bold text-rose-500">{intensity} / 10</span>
-                        </div>
-                        <input 
-                            type="range" 
-                            min="1" 
-                            max="10" 
-                            value={intensity} 
-                            onChange={(e) => setIntensity(Number(e.target.value))}
-                            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
-                        />
-                        </div>
+                            <div>
+                            <label className="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wide">Uygulanan Tarife</label>
+                            <input 
+                                type="text"
+                                value={newAction}
+                                onChange={(e) => setNewAction(e.target.value)}
+                                placeholder="Örn: 2 saat sessiz kalındı."
+                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+                            />
+                            </div>
 
-                        <button 
-                        onClick={handleAddTrip}
-                        disabled={!newReason || !newAction}
-                        className="w-full bg-rose-500 hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2"
-                        >
-                        <Plus size={20} /> Listeye Ekle
-                        </button>
-                    </div>
+                            <div>
+                            <div className="flex justify-between mb-1">
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Trip Şiddeti (1-10)</label>
+                                <span className="text-xs font-bold text-rose-500">{intensity} / 10</span>
+                            </div>
+                            <input 
+                                type="range" 
+                                min="1" 
+                                max="10" 
+                                value={intensity} 
+                                onChange={(e) => setIntensity(Number(e.target.value))}
+                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                            />
+                            </div>
+
+                            <button 
+                            onClick={handleAddTrip}
+                            disabled={!newReason || !newAction}
+                            className="w-full bg-rose-500 hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2"
+                            >
+                            <Plus size={20} /> Listeye Ekle
+                            </button>
+                        </div>
                     </div>
 
                     {/* İstatistikler */}
@@ -211,12 +324,16 @@
 
                     {/* Trip Listesi */}
                     <div className="space-y-4 pb-12">
-                    <h3 className="text-slate-500 font-bold ml-2 text-sm">SON HAREKETLER</h3>
+                    <h3 className="text-slate-500 font-bold ml-2 text-sm uppercase tracking-wider">Sunucu Kayıtları</h3>
                     
-                    {trips.length === 0 ? (
+                    {loading ? (
+                        <div className="text-center py-8 text-rose-400 font-bold loading-dots">
+                             Kayıtlar Sunucudan Çekiliyor
+                        </div>
+                    ) : trips.length === 0 ? (
                         <div className="text-center py-10 bg-white/50 rounded-3xl border-2 border-dashed border-slate-200">
                         <Heart className="w-12 h-12 text-slate-200 mx-auto mb-2" />
-                        <p className="text-slate-400 font-medium">Şimdilik her şey yolunda... <br/>(Fırtına öncesi sessizlik?)</p>
+                        <p className="text-slate-400 font-medium">Şimdilik her şey yolunda... <br/>(Veritabanı tertemiz)</p>
                         </div>
                     ) : (
                         trips.map((trip) => (
@@ -256,8 +373,18 @@
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Uygulamayı Başlatma
+        const initApp = () => {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        };
+
+        // Firebase hazırsa başlat, değilse bekle
+        if (window.Firebase) {
+            initApp();
+        } else {
+            window.addEventListener('firebase-ready', initApp);
+        }
     </script>
 </body>
 </html>
