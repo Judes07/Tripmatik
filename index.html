@@ -183,7 +183,7 @@
             const bgClass = type === 'error' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600';
             const Icon = type === 'error' ? Icons.X : Icons.Check;
             return (
-                <div className={`toast-enter fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border ${bgClass} backdrop-blur-md`}>
+                <div className={`toast-enter fixed top-4 right-4 z-[999] flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border ${bgClass} backdrop-blur-md`}>
                     <Icon size={18} />
                     <span className="text-sm font-bold">{message}</span>
                     <button onClick={onClose} className="opacity-50 hover:opacity-100 ml-2"><Icons.X size={14}/></button>
@@ -221,19 +221,29 @@
                 return "Tektaş / PS5 💍";
             };
 
+            // AUTHENTICATION FIX (Handles silent failures & stops loading animation)
             useEffect(() => {
                 if (!fb) return;
                 const initAuth = async () => {
                     try {
                         if (fb.initialToken) await fb.signInWithCustomToken(fb.auth, fb.initialToken);
                         else await fb.signInAnonymously(fb.auth);
-                    } catch (err) { console.error(err); addToast("Giriş hatası!", "error"); }
+                    } catch (err) { 
+                        console.error("Giriş hatası:", err); 
+                        setLoading(false); // Stop loading so it doesn't spin forever
+                        addToast("Giriş hatası! Lütfen Firebase Authentication'dan 'Anonymous' girişi açın.", "error"); 
+                    }
                 };
                 initAuth();
-                const unsubscribe = fb.onAuthStateChanged(fb.auth, (u) => setUser(u));
+                
+                const unsubscribe = fb.onAuthStateChanged(fb.auth, (u) => {
+                    setUser(u);
+                    if (!u) setLoading(false); // Make sure it stops loading if no user
+                });
                 return () => unsubscribe();
             }, []);
 
+            // DATA FETCHING FIX (Catches rules errors)
             useEffect(() => {
                 if (!user || !fb) return;
                 const q = fb.query(fb.collection(fb.db, 'omos_trips'));
@@ -245,7 +255,7 @@
                 }, (error) => {
                     console.error("Veri çekme hatası:", error);
                     setLoading(false);
-                    addToast("Veritabanı erişimi engellendi. Lütfen kuralları kontrol edin.", "error");
+                    addToast("Veritabanı okuma izniniz yok. Firestore Rules ayarlarını kontrol edin.", "error");
                 });
                 return () => unsubscribe();
             }, [user]);
@@ -282,7 +292,7 @@
                     addToast("Trip başarıyla yayınlandı!");
                 } catch (error) { 
                     console.error(error);
-                    addToast("Kayıt başarısız! Veritabanı kurallarını kontrol et.", "error"); 
+                    addToast("Kayıt başarısız! Veritabanı (Firestore) yazma izniniz yok.", "error"); 
                 }
             };
 
@@ -313,7 +323,6 @@
             const handleShare = (trip) => {
                 const text = `📢 *ÖMOŞ TRİPMATİK BİLDİRİMİ* 📢\n\n😡 *Sebep:* ${trip.reason}\n⚖️ *Ceza:* ${trip.action}\n🔥 *Şiddet:* ${trip.intensity}/10\n💰 *Bedel:* ${calculateCost(trip.intensity)}\n\n_Acil müdahale bekleniyor!_`;
                 
-                // Fallback for iframe/sandboxed environments
                 const textArea = document.createElement("textarea");
                 textArea.value = text;
                 textArea.style.position = "fixed";
@@ -434,9 +443,23 @@
                             </div>
                         </div>
 
-                        {/* LISTE */}
+                        {/* LISTE VE UYARILAR */}
                         <div className="lg:col-span-7 space-y-6 animate-enter" style={{animationDelay: '0.2s'}}>
                             
+                            {/* Firebase Hata Gösterimi */}
+                            {!user && !loading && (
+                                <div className="glass p-8 rounded-[32px] text-center border-2 border-dashed border-rose-300 bg-rose-50/50">
+                                    <div className="text-4xl mb-4">🚨</div>
+                                    <p className="text-rose-600 font-bold text-lg mb-2">Veritabanı Bağlantısı Kurulamadı</p>
+                                    <div className="text-sm text-slate-600 text-left bg-white/70 p-4 rounded-xl inline-block shadow-sm">
+                                        Firebase konsolunda şu iki ayarı yaptığından emin ol:<br/><br/>
+                                        1. <b>Authentication</b> bölümünden <b>Anonymous (Anonim)</b> girişi etkinleştir.<br/><br/>
+                                        2. <b>Firestore Database</b> -> <b>Rules (Kurallar)</b> sekmesine gidip şu kodu yapıştır:<br/>
+                                        <code className="block bg-slate-800 text-green-400 p-2 mt-2 rounded">allow read, write: if true;</code>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <div className="glass p-5 rounded-3xl flex flex-col justify-center items-center text-center">
                                     <span className="text-3xl font-black text-rose-500">{totalTrips}</span>
@@ -472,7 +495,7 @@
                             <div className="space-y-4 pb-24">
                                 {loading ? (
                                     <div className="glass p-12 rounded-[32px] text-center text-rose-400 animate-pulse">Veriler Buluttan İniyor...</div>
-                                ) : filteredTrips.length === 0 ? (
+                                ) : filteredTrips.length === 0 && user ? (
                                     <div className="glass p-12 rounded-[32px] text-center border-2 border-dashed border-slate-200">
                                         <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Smile className="text-slate-300 w-8 h-8"/></div>
                                         <p className="text-slate-500 font-bold">Kayıt Bulunamadı</p>
