@@ -113,13 +113,13 @@
         // SENİN FIREBASE AYARLARIN
         // =================================================================
         const SENIN_FIREBASE_AYARLARIN = {
-             apiKey: "AIzaSyA9wecBOHX9-qtvjKgu8MPoHEb_ld-LC44",
-             authDomain: "trip-64cb9.firebaseapp.com",
-            projectId: "trip-64cb9",
-            storageBucket: "trip-64cb9.firebasestorage.app",
-            messagingSenderId: "580909327374",
-            appId: "1:580909327374:web:ce9d449e00d7b23e14885f",
-            measurementId: "G-1H5W71PNXY"
+            apiKey: "AIzaSyB3EP3nPv1j0ayEQq3oDGWGknvwi8ikX1Q",
+            authDomain: "trip-d6472.firebaseapp.com",
+            projectId: "trip-d6472",
+            storageBucket: "trip-d6472.firebasestorage.app",
+            messagingSenderId: "128376930846",
+            appId: "1:128376930846:web:e358e32a4b2325e50ea40f",
+            measurementId: "G-F2J6MRN9VP"
         };
         
         let firebaseConfig;
@@ -242,7 +242,11 @@
                     loadedTrips.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                     setTrips(loadedTrips);
                     setLoading(false);
-                }, () => setLoading(false));
+                }, (error) => {
+                    console.error("Veri çekme hatası:", error);
+                    setLoading(false);
+                    addToast("Veritabanı erişimi engellendi. Lütfen kuralları kontrol edin.", "error");
+                });
                 return () => unsubscribe();
             }, [user]);
 
@@ -276,7 +280,10 @@
                     setNewReason(""); setNewAction("");
                     setIntensity(5); setSelectedMood(MOODS[0]);
                     addToast("Trip başarıyla yayınlandı!");
-                } catch (error) { addToast("Kayıt başarısız.", "error"); }
+                } catch (error) { 
+                    console.error(error);
+                    addToast("Kayıt başarısız! Veritabanı kurallarını kontrol et.", "error"); 
+                }
             };
 
             const toggleResolve = async (id, currentStatus) => {
@@ -305,8 +312,30 @@
 
             const handleShare = (trip) => {
                 const text = `📢 *ÖMOŞ TRİPMATİK BİLDİRİMİ* 📢\n\n😡 *Sebep:* ${trip.reason}\n⚖️ *Ceza:* ${trip.action}\n🔥 *Şiddet:* ${trip.intensity}/10\n💰 *Bedel:* ${calculateCost(trip.intensity)}\n\n_Acil müdahale bekleniyor!_`;
-                navigator.clipboard.writeText(text);
-                addToast("Metin kopyalandı! WhatsApp'a yapıştır.");
+                
+                // Fallback for iframe/sandboxed environments
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                textArea.style.top = "0";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        addToast("Metin kopyalandı! WhatsApp'a yapıştır.");
+                    } else {
+                        addToast("Kopyalama başarısız", "error");
+                    }
+                } catch (err) {
+                    console.error('Kopyalama başarısız', err);
+                    addToast("Kopyalama başarısız", "error");
+                }
+                
+                document.body.removeChild(textArea);
             };
 
             const handleRandomTrip = () => {
