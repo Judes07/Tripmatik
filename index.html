@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ömoş Tripmatik Platinum</title>
+    <title>Ömoş & Diloş: Tripmatik Platinum</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React ve ReactDOM -->
@@ -30,17 +30,20 @@
 
         /* Arka Plan */
         .bg-animated {
-            background: radial-gradient(circle at 50% 50%, rgba(255, 220, 220, 0.5), rgba(220, 220, 255, 0.2), transparent 80%);
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -2;
-            animation: pulseBg 15s ease-in-out infinite alternate;
+            animation: pulseBg 30s ease-in-out infinite alternate;
         }
-        @keyframes pulseBg { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+        @keyframes pulseBg { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
 
         /* Glassmorphism */
         .glass {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.9);
             box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
@@ -87,9 +90,9 @@
     
     <div id="root">
         <div class="min-h-screen flex flex-col items-center justify-center text-rose-500">
-            <div class="text-5xl mb-4 animate-bounce">💎</div>
-            <div class="text-2xl font-bold mb-2">Ömoş Tripmatik</div>
-            <div class="loading-dots text-sm font-semibold opacity-75">Platinum Yükleniyor</div>
+            <div class="text-5xl mb-4 animate-bounce">💖</div>
+            <div class="text-2xl font-bold mb-2">Ömoş & Diloş Tripmatik</div>
+            <div class="loading-dots text-sm font-semibold opacity-75">Aşk Paneli Yükleniyor</div>
         </div>
     </div>
 
@@ -98,7 +101,7 @@
             const root = document.getElementById('root');
             let friendlyMsg = msg;
             if (msg.includes("Firebase config")) friendlyMsg = "Veritabanı ayarları eksik.";
-            root.innerHTML = `<div class="flex items-center justify-center min-h-screen p-4 bg-rose-50"><div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border-l-8 border-rose-500"><h3 class="text-xl font-bold text-slate-800 mb-2">Hata Oluştu</h3><p class="text-slate-600 mb-4 text-sm">${friendlyMsg}</p><div class="bg-slate-100 p-3 rounded text-xs text-slate-500 font-mono break-all">${msg}</div></div></div>`;
+            root.innerHTML = `<div class="flex items-center justify-center min-h-screen p-4 bg-rose-50"><div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border-l-4 border-rose-500"><h3 class="text-xl font-bold text-slate-800 mb-2">Hata Oluştu</h3><p class="text-slate-600 mb-4 text-sm">${friendlyMsg}</p><div class="bg-slate-100 p-3 rounded text-xs text-slate-500 font-mono break-all">${msg}</div></div></div>`;
             return false;
         };
     </script>
@@ -113,13 +116,13 @@
         // SENİN FIREBASE AYARLARIN
         // =================================================================
         const SENIN_FIREBASE_AYARLARIN = {
-           apiKey: "AIzaSyA9wecBOHX9-qtvjKgu8MPoHEb_ld-LC44",
-  authDomain: "trip-64cb9.firebaseapp.com",
-  projectId: "trip-64cb9",
-  storageBucket: "trip-64cb9.firebasestorage.app",
-  messagingSenderId: "580909327374",
-  appId: "1:580909327374:web:ce9d449e00d7b23e14885f",
-  measurementId: "G-1H5W71PNXY"
+            apiKey: "AIzaSyA9wecBOHX9-qtvjKgu8MPoHEb_ld-LC44",
+            authDomain: "trip-64cb9.firebaseapp.com",
+            projectId: "trip-64cb9",
+            storageBucket: "trip-64cb9.firebasestorage.app",
+            messagingSenderId: "580909327374",
+            appId: "1:580909327374:web:ce9d449e00d7b23e14885f",
+            measurementId: "G-1H5W71PNXY"
         };
         
         let firebaseConfig;
@@ -163,30 +166,27 @@
             Smile: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>,
             Plus: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>,
             Sparkles: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 5h4"/><path d="M3 9h4"/></svg>,
-            Link: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
-            X: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-            Check: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
             Search: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
             Share: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>,
             Gift: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
         };
 
         const MOODS = [
-            { id: 'angry', emoji: '😡', label: 'Sinirli', bg: 'bg-red-50', border: 'border-red-200' },
-            { id: 'sad', emoji: '🥺', label: 'Kırgın', bg: 'bg-blue-50', border: 'border-blue-200' },
-            { id: 'ignored', emoji: '😒', label: 'Umursamaz', bg: 'bg-gray-50', border: 'border-gray-200' },
-            { id: 'fire', emoji: '🔥', label: 'Alev Alev', bg: 'bg-orange-50', border: 'border-orange-200' },
-            { id: 'cool', emoji: '😎', label: 'Haval', bg: 'bg-purple-50', border: 'border-purple-200' }
+            { id: 'angry', emoji: '😡', label: 'Diloş Sinirli', bg: 'bg-red-50', border: 'border-red-200' },
+            { id: 'sad', emoji: '🥺', label: 'Ömoş Kırgın', bg: 'bg-blue-50', border: 'border-blue-200' },
+            { id: 'eyeroll', emoji: '🙄', label: 'Sabır Ver', bg: 'bg-amber-50', border: 'border-amber-200' },
+            { id: 'pensive', emoji: '😔', label: 'Boynum Bükük', bg: 'bg-indigo-50', border: 'border-indigo-200' },
+            { id: 'ignored', emoji: '😒', label: 'Soğuk Savaş', bg: 'bg-gray-50', border: 'border-gray-200' },
+            { id: 'fire', emoji: '🔥', label: 'Kıyamet', bg: 'bg-orange-50', border: 'border-orange-200' },
+            { id: 'cool', emoji: '😎', label: 'Yine Haklıyım', bg: 'bg-purple-50', border: 'border-purple-200' },
+            { id: 'ok', emoji: '👍', label: 'Peki 👍', bg: 'bg-emerald-50', border: 'border-emerald-200' }
         ];
 
         const Toast = ({ message, type, onClose }) => {
             const bgClass = type === 'error' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600';
-            const Icon = type === 'error' ? Icons.X : Icons.Check;
             return (
                 <div className={`toast-enter fixed top-4 right-4 z-[999] flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border ${bgClass} backdrop-blur-md`}>
-                    <Icon size={18} />
                     <span className="text-sm font-bold">{message}</span>
-                    <button onClick={onClose} className="opacity-50 hover:opacity-100 ml-2"><Icons.X size={14}/></button>
                 </div>
             );
         };
@@ -213,15 +213,14 @@
             };
 
             const calculateCost = (level) => {
-                if(level <= 2) return "Bir Tatlı Söz 😊";
-                if(level <= 4) return "Bir Kahve ☕";
-                if(level <= 6) return "En Sevdiği Çikolata 🍫";
-                if(level <= 8) return "Güzel Bir Yemek 🍕";
-                if(level <= 9) return "Hafta Sonu Tatili 🏖️";
-                return "Tektaş / PS5 💍";
+                if(level <= 2) return "Tatlı bir mesaj ve sıkı sarılma 🥰";
+                if(level <= 4) return "En sevilen kahve ve çikolata ikilisi 🍫☕";
+                if(level <= 6) return "Güzel ve baş başa bir akşam yemeği 🍕";
+                if(level <= 8) return "Gönül alma hediyesi / Kozmetik alışverişi 💄";
+                if(level <= 9) return "Harika bir hafta sonu kaçamağı / Tatil 🏖️";
+                return "Sonsuz sadakat ve PS5 / Tektaş 💍🎮";
             };
 
-            // AUTHENTICATION FIX (Handles silent failures & stops loading animation)
             useEffect(() => {
                 if (!fb) return;
                 const initAuth = async () => {
@@ -230,7 +229,7 @@
                         else await fb.signInAnonymously(fb.auth);
                     } catch (err) { 
                         console.error("Giriş hatası:", err); 
-                        setLoading(false); // Stop loading so it doesn't spin forever
+                        setLoading(false);
                         addToast("Giriş hatası! Lütfen Firebase Authentication'dan 'Anonymous' girişi açın.", "error"); 
                     }
                 };
@@ -238,12 +237,11 @@
                 
                 const unsubscribe = fb.onAuthStateChanged(fb.auth, (u) => {
                     setUser(u);
-                    if (!u) setLoading(false); // Make sure it stops loading if no user
+                    if (!u) setLoading(false);
                 });
                 return () => unsubscribe();
             }, []);
 
-            // DATA FETCHING FIX (Catches rules errors)
             useEffect(() => {
                 if (!user || !fb) return;
                 const q = fb.query(fb.collection(fb.db, 'omos_trips'));
@@ -321,21 +319,21 @@
             };
 
             const handleShare = (trip) => {
-                const text = `📢 *ÖMOŞ TRİPMATİK BİLDİRİMİ* 📢\n\n😡 *Sebep:* ${trip.reason}\n⚖️ *Ceza:* ${trip.action}\n🔥 *Şiddet:* ${trip.intensity}/10\n💰 *Bedel:* ${calculateCost(trip.intensity)}\n\n_Acil müdahale bekleniyor!_`;
+                const text = `📢 *ÖMOŞ & DİLOŞ TRİPMATİK* 📢\n\n🎯 *Olay Sebebi:* ${trip.reason}\n⚖️ *Uygulanan Tarife:* ${trip.action}\n🔥 *Kriz Şiddeti:* ${trip.intensity}/10\n💰 *Gönül Alma Bedeli:* ${calculateCost(trip.intensity)}\n\n_Bu bir resmi tebligattır, hızlıca barışılması rica olunur._`;
                 
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                textArea.style.position = "fixed";
-                textArea.style.left = "-9999px";
-                textArea.style.top = "0";
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
+                const javaTextArea = document.createElement("textarea");
+                javaTextArea.value = text;
+                javaTextArea.style.position = "fixed";
+                javaTextArea.style.left = "-9999px";
+                javaTextArea.style.top = "0";
+                document.body.appendChild(javaTextArea);
+                javaTextArea.focus();
+                javaTextArea.select();
                 
                 try {
                     const successful = document.execCommand('copy');
                     if (successful) {
-                        addToast("Metin kopyalandı! WhatsApp'a yapıştır.");
+                        addToast("Metin kopyalandı! WhatsApp'ya yapıştır.");
                     } else {
                         addToast("Kopyalama başarısız", "error");
                     }
@@ -344,24 +342,24 @@
                     addToast("Kopyalama başarısız", "error");
                 }
                 
-                document.body.removeChild(textArea);
+                document.body.removeChild(javaTextArea);
             };
 
             const handleRandomTrip = () => {
                 const randomReasons = [
-                    { r: "Rüyamda beni aldattığını gördüm, sabah günaydın demedi.", a: "Bütün gün soğuk savaş ilan edildi." },
-                    { r: "Instagram storyme alev atmadı, sadece beğendi.", a: "Arşivdeki tüm fotoğraflar geri yüklendi, kaos yaratılacak." },
-                    { r: "Ben bir şey anlatırken telefona baktı.", a: "Modem fişi saklanacak." },
-                    { r: "Saçımın ucundan 1 cm kestirdim, fark etmedi.", a: "'Sen beni hiç sevmiyorsun' konulu 4 saatlik sunum yapılacak." },
-                    { r: "Mesajıma 3 dakika 42 saniye geç cevap verdi.", a: "Görüldü atılıp çevrimiçi beklenecek." },
-                    { r: "Hangi yemeği yiyeceğimize karar veremedi.", a: "Açlık grevi başlatıldı." },
-                    { r: "Diziyi bensiz izlemiş.", a: "Netflix şifresi değiştirildi." }
+                    { r: "Diloş rüyasında Ömoş'un onu aldattığını gördü ve sabah günaydın demedi.", a: "Kapılar biraz sert kapatıldı, soğuk savaş başladı." },
+                    { r: "Ömoş, Diloş'un WhatsApp storysine anında alev atmadı, sadece beğendi.", a: "Bütün eski fotoğraflar arşivlendi, biyografi silindi." },
+                    { r: "Diloş tam çok heyecanlı bir şey anlatırken Ömoş'un gözü telefona daldı.", a: "Modem fişi saklandı, 2 saat tek kelime edilmedi." },
+                    { r: "Diloş saçının ucundan tam 1 cm kestirdi ama Ömoş hiç fark etmedi.", a: "'Sen beni hiç dikkatli dinlemiyorsun' sunumu başladı." },
+                    { r: "Ömoş mesajlara tam 4 dakika 20 saniye boyunca geç cevap verdi.", a: "Görüldü atıldı, bilerek yarım saat yazılmadı." },
+                    { r: "Akşam ne yiyeceğimize karar verilemedi ve 'sen bilirsin' krizi çıktı.", a: "Karşılıklı açlık grevi ve somurtma seansı." },
+                    { r: "Ömoş, Diloş'un en sevdiği dizinin yeni bölümünü gizlice tek başına izlemiş.", a: "Netflix şifresi değiştirildi, büyük ambargo." }
                 ];
                 const random = randomReasons[Math.floor(Math.random() * randomReasons.length)];
                 setNewReason(random.r); setNewAction(random.a);
                 setIntensity(Math.floor(Math.random() * 5) + 5);
                 setSelectedMood(MOODS[Math.floor(Math.random() * MOODS.length)]);
-                addToast("Rastgele senaryo yüklendi!");
+                addToast("Rastgele Ömoş & Diloş senaryosu yüklendi!");
             };
 
             const totalTrips = trips.length;
@@ -381,10 +379,10 @@
                                 <Icons.HeartCrack className="w-12 h-12 text-rose-500" />
                             </div>
                         </div>
-                        <h1 className="text-5xl font-black text-slate-800 tracking-tight drop-shadow-sm">
-                            Ömoş <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-purple-600">Tripmatik</span>
+                        <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight drop-shadow-sm">
+                            Ömoş & Diloş <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-purple-600">Tripmatik</span>
                         </h1>
-                        <p className="text-slate-500 font-medium mt-2 text-lg">v5.0 Platinum Edition</p>
+                        <p className="text-slate-500 font-medium mt-2 text-md">v5.5 Limited Custom Edition</p>
                     </header>
 
                     <div className="grid lg:grid-cols-12 gap-8">
@@ -394,7 +392,7 @@
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                                         <span className="bg-rose-100 text-rose-600 p-2 rounded-xl"><Icons.Zap size={20}/></span>
-                                        Yeni Trip
+                                        Yeni Kriz Girişi
                                     </h2>
                                     <button onClick={handleRandomTrip} className="text-xs bg-purple-50 text-purple-600 px-3 py-1.5 rounded-full font-bold hover:bg-purple-100 transition-colors border border-purple-100 flex items-center gap-1">
                                         <Icons.Sparkles size={14}/> Otomatik
@@ -403,47 +401,50 @@
 
                                 <div className="space-y-5">
                                     <div>
-                                        <label className="text-xs font-bold text-slate-400 mb-2 block uppercase tracking-wider">Hissiyat</label>
-                                        <div className="flex gap-2">
+                                        <label className="text-xs font-bold text-slate-400 mb-2 block uppercase tracking-wider">Mevcut Durum</label>
+                                        
+                                        {}
+                                        <div className="grid grid-cols-4 gap-2">
                                             {MOODS.map(mood => (
                                                 <button key={mood.id} onClick={() => setSelectedMood(mood)}
-                                                    className={`flex-1 flex flex-col items-center justify-center p-2 rounded-2xl border-2 transition-all duration-200 ${selectedMood.id === mood.id ? `${mood.bg} ${mood.border} scale-110 shadow-sm` : 'bg-white border-transparent hover:bg-slate-50'}`}>
-                                                    <span className="text-2xl mb-1 filter drop-shadow-sm">{mood.emoji}</span>
+                                                    className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 transition-all duration-200 ${selectedMood.id === mood.id ? `${mood.bg} ${mood.border} scale-110 shadow-md z-10` : 'bg-white border-transparent hover:bg-slate-50'}`}>
+                                                    <span className="text-2xl filter drop-shadow-sm">{mood.emoji}</span>
                                                 </button>
                                             ))}
                                         </div>
+                                        <div className="text-center mt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedMood.label}</div>
                                     </div>
 
                                     <div className="space-y-3">
                                         <div>
                                             <label className="text-xs font-bold text-slate-400 mb-1 block ml-1">TRİP SEBEBİ</label>
-                                            <textarea value={newReason} onChange={(e) => setNewReason(e.target.value)} className="w-full p-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-rose-400 focus:ring-4 focus:ring-rose-100 transition-all resize-none h-24 outline-none font-medium" placeholder="Bugün ne yaptı?..." />
+                                            <textarea value={newReason} onChange={(e) => setNewReason(e.target.value)} className="w-full p-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-rose-400 focus:ring-4 focus:ring-rose-100 transition-all resize-none h-24 outline-none font-medium" placeholder="Olay tam olarak nasıl gerçekleşti?..." />
                                         </div>
                                         <div>
-                                            <label className="text-xs font-bold text-slate-400 mb-1 block ml-1">UYGULANACAK TARİFE</label>
-                                            <input type="text" value={newAction} onChange={(e) => setNewAction(e.target.value)} className="w-full p-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-rose-400 focus:ring-4 focus:ring-rose-100 transition-all outline-none font-medium" placeholder="Cezası nedir?" />
+                                            <label className="text-xs font-bold text-slate-400 mb-1 block ml-1">UYGULANAN TARİFE / CEZA</label>
+                                            <input type="text" value={newAction} onChange={(e) => setNewAction(e.target.value)} className="w-full p-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-rose-400 focus:ring-4 focus:ring-rose-100 transition-all outline-none font-medium" placeholder="Şu an hangi ceza devrede?" />
                                         </div>
                                     </div>
 
                                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                                         <div className="flex justify-between mb-3 items-center">
-                                            <label className="text-xs font-bold text-slate-400 uppercase">Sinir Katsayısı</label>
+                                            <label className="text-xs font-bold text-slate-400 uppercase">Kriz Şiddeti</label>
                                             <span className={`text-xs font-bold px-2 py-1 rounded-lg text-white ${intensity > 7 ? 'bg-red-500 animate-pulse' : 'bg-slate-400'}`}>{intensity} / 10</span>
                                         </div>
                                         <input type="range" min="1" max="10" value={intensity} onChange={(e) => setIntensity(Number(e.target.value))} />
-                                        <div className="mt-2 text-center text-xs font-bold text-purple-600 bg-purple-50 py-1 rounded-lg">
-                                            Bedel: {calculateCost(intensity)}
+                                        <div className="mt-2 text-center text-xs font-bold text-purple-600 bg-purple-50 p-2 rounded-lg">
+                                            Gönül Alma Bedeli: <span className="block text-slate-700 font-medium mt-1">{calculateCost(intensity)}</span>
                                         </div>
                                     </div>
 
-                                    <button onClick={handleAddTrip} disabled={!newReason || !newAction} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-lg shadow-slate-200 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 group">
-                                        <Icons.Plus size={20} className="group-hover:rotate-90 transition-transform"/> Listeye Ekle
+                                    <button onClick={handleAddTrip} disabled={!newReason || !newAction} className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-lg shadow-slate-200 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 group">
+                                        <Icons.Plus size={20} className="group-hover:rotate-90 transition-transform"/> Listeye İşle
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* LISTE VE UYARILAR */}
+                        {/* LISTE PANELİ */}
                         <div className="lg:col-span-7 space-y-6 animate-enter" style={{animationDelay: '0.2s'}}>
                             
                             {/* Firebase Hata Gösterimi */}
@@ -452,10 +453,7 @@
                                     <div className="text-4xl mb-4">🚨</div>
                                     <p className="text-rose-600 font-bold text-lg mb-2">Veritabanı Bağlantısı Kurulamadı</p>
                                     <div className="text-sm text-slate-600 text-left bg-white/70 p-4 rounded-xl inline-block shadow-sm">
-                                        Firebase konsolunda şu iki ayarı yaptığından emin ol:<br/><br/>
-                                        1. <b>Authentication</b> bölümünden <b>Anonymous (Anonim)</b> girişi etkinleştir.<br/><br/>
-                                        2. <b>Firestore Database</b> -> <b>Rules (Kurallar)</b> sekmesine gidip şu kodu yapıştır:<br/>
-                                        <code className="block bg-slate-800 text-green-400 p-2 mt-2 rounded">allow read, write: if true;</code>
+                                        Lütfen Firebase Console'dan <b>Authentication -> Anonymous</b> giriş yöntemini aktif ettiğinden emin ol.
                                     </div>
                                 </div>
                             )}
@@ -479,26 +477,28 @@
                             <div className="flex flex-col md:flex-row gap-3">
                                 <div className="relative flex-1">
                                     <div className="absolute left-3 top-3 text-slate-400"><Icons.Search size={18}/></div>
-                                    <input type="text" placeholder="Trip ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
+                                    <input type="text" placeholder="Gelişmiş kriz araması..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
                                         className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm font-bold text-slate-700 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-200 shadow-sm" />
                                 </div>
                                 <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-100">
                                     {['all', 'active', 'resolved'].map(f => (
                                         <button key={f} onClick={() => setFilter(f)}
                                             className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${filter === f ? 'bg-rose-500 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>
-                                            {f === 'all' ? 'Tümü' : f === 'active' ? 'Aktif' : 'Çözülen'}
+                                            {f === 'all' ? 'Tümü' : f === 'active' ? 'Aktif' : 'Barışılanlar'}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
+                            {}
                             <div className="space-y-4 pb-24">
                                 {loading ? (
-                                    <div className="glass p-12 rounded-[32px] text-center text-rose-400 animate-pulse">Veriler Buluttan İniyor...</div>
+                                    <div className="glass p-12 rounded-[32px] text-center text-rose-400 animate-pulse">Veriler Sunucudan Çekiliyor...</div>
                                 ) : filteredTrips.length === 0 && user ? (
                                     <div className="glass p-12 rounded-[32px] text-center border-2 border-dashed border-slate-200">
                                         <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Smile className="text-slate-300 w-8 h-8"/></div>
-                                        <p className="text-slate-500 font-bold">Kayıt Bulunamadı</p>
+                                        <p className="text-slate-500 font-bold">Her şey sakin!</p>
+                                        <p className="text-xs text-slate-400 mt-1">Gösterilecek kriz kaydı bulunmuyor.</p>
                                     </div>
                                 ) : (
                                     filteredTrips.map((trip, idx) => (
@@ -511,18 +511,18 @@
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    <button onClick={() => handleShare(trip)} className="p-2 rounded-xl bg-indigo-50 text-indigo-500 hover:bg-indigo-100 transition-colors shadow-sm" title="Paylaş"><Icons.Share size={18}/></button>
-                                                    <button onClick={() => toggleResolve(trip.id, trip.resolved)} className={`p-2 rounded-xl transition-colors shadow-sm ${trip.resolved ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`} title="Barış"><Icons.CheckCircle size={18}/></button>
+                                                    <button onClick={() => handleShare(trip)} className="p-2 rounded-xl bg-indigo-50 text-indigo-500 hover:bg-indigo-100 transition-colors shadow-sm" title="WhatsApp Tebligat Olarak Kopyala"><Icons.Share size={18}/></button>
+                                                    <button onClick={() => toggleResolve(trip.id, trip.resolved)} className={`p-2 rounded-xl transition-colors shadow-sm ${trip.resolved ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`} title="Barış İlan Et"><Icons.CheckCircle size={18}/></button>
                                                     <button onClick={() => handleDelete(trip.id)} className="p-2 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition-colors shadow-sm"><Icons.Trash2 size={18}/></button>
                                                 </div>
                                             </div>
                                             <div className="pl-1">
                                                 <h3 className={`text-lg font-bold text-slate-800 leading-snug mb-3 ${trip.resolved ? 'line-through decoration-2 decoration-emerald-300' : ''}`}>{trip.reason}</h3>
                                                 <div className={`p-4 rounded-2xl text-sm border ${trip.resolved ? 'bg-emerald-50/50 border-emerald-100 text-emerald-800' : 'bg-rose-50/30 border-rose-100 text-slate-700'}`}>
-                                                    <span className="font-bold text-xs uppercase opacity-60 block mb-1">Uygulanan Tarife:</span> {trip.action}
+                                                    <span className="font-bold text-xs uppercase opacity-60 block mb-1">Uygulanan Yaptırım / Ceza:</span> {trip.action}
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-3">
-                                                    <span className="bg-purple-50 text-purple-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-purple-100"><Icons.Gift size={12}/> Bedel: {calculateCost(trip.intensity)}</span>
+                                                    <span className="bg-purple-50 text-purple-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-purple-100"><Icons.Gift size={12}/> Hak Etme Bedeli: {calculateCost(trip.intensity)}</span>
                                                 </div>
                                             </div>
                                             <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
