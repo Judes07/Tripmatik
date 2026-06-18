@@ -6,13 +6,18 @@
     <title>Ömoş & Diloş: Tripmatik Platinum</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React ve ReactDOM -->
+    <!-- React ve ReactDOM (UMD Sürümleri) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel -->
+    <!-- Babel Standalone (Tarayıcıda derleme için) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Confetti Efekti için -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Firebase Geriye Dönük Uyumluluk (Compat) SDK'ları -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap');
@@ -41,7 +46,6 @@
         }
         @keyframes pulseBg { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
 
-        /* Glassmorphism */
         .glass {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(20px);
@@ -61,7 +65,6 @@
             border-color: rgba(244, 63, 94, 0.3);
         }
 
-        /* Slider */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
@@ -79,14 +82,33 @@
         .loading-dots:after { content: '.'; animation: dots 1.5s steps(5, end) infinite; }
         @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } 80%, 100% { content: ''; } }
         
-        /* Toast Animasyonu */
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        .wheel-spin { transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1); }
     </style>
 </head>
 <body class="overflow-x-hidden">
     
     <div class="bg-animated"></div>
+
+    <!-- ================================================================= -->
+    <!-- ⚙️ TEK NOKTADAN HIZLI AYARLAR PANELİ ⚙️ -->
+    <!-- ================================================================= -->
+    <script>
+        window.APP_CONFIG = {
+            firebase: {
+                apiKey: "AIzaSyCQBqeabh8P_HPEvNn1I_zGxePbAPJCSvI",
+                authDomain: "trip-64cb9.firebaseapp.com",
+                projectId: "trip-64cb9",
+                storageBucket: "trip-64cb9.firebasestorage.app",
+                messagingSenderId: "580909327374",
+                appId: "1:580909327374:web:2a7f6656dad5661814885f",
+                measurementId: "G-EGCDHFPMQ9"
+            },
+            geminiApiKey: "AQ.Ab8RN6Iw7Izhr1lQBeQ_fqZywdu09jrOqZ6MStk5ydLkdS8HKA"
+        };
+    </script>
     
     <div id="root">
         <div class="min-h-screen flex flex-col items-center justify-center text-rose-500">
@@ -96,65 +118,69 @@
         </div>
     </div>
 
+    <!-- Global Javascript Hata Yakalayıcı Panel -->
     <script>
         window.onerror = function(msg, url, line, col, error) {
             const root = document.getElementById('root');
-            let friendlyMsg = msg;
-            if (msg.includes("Firebase config")) friendlyMsg = "Veritabanı ayarları eksik.";
-            root.innerHTML = `<div class="flex items-center justify-center min-h-screen p-4 bg-rose-50"><div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border-l-4 border-rose-500"><h3 class="text-xl font-bold text-slate-800 mb-2">Hata Oluştu</h3><p class="text-slate-600 mb-4 text-sm">${friendlyMsg}</p><div class="bg-slate-100 p-3 rounded text-xs text-slate-500 font-mono break-all">${msg}</div></div></div>`;
+            const errScreen = document.getElementById('error-screen') || document.createElement('div');
+            errScreen.id = "error-screen";
+            errScreen.className = "fixed inset-0 z-[10000] bg-rose-50/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto";
+            errScreen.innerHTML = `
+                <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-2xl max-w-xl w-full border-2 border-red-200 animate-enter">
+                    <div class="flex items-center gap-4 mb-4 text-red-500">
+                        <span class="text-4xl">⚠️</span>
+                        <h3 class="text-2xl font-black text-slate-800">Sistem Çalışma Hatası!</h3>
+                    </div>
+                    <p class="text-slate-600 text-sm mb-4">Uygulama yüklenirken veya çalışırken kritik bir hata oluştu. Teknik detaylar aşağıda listelenmiştir:</p>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs font-mono text-slate-700 space-y-2 max-h-60 overflow-y-auto mb-4">
+                        <p class="font-bold text-red-600">Hata Mesajı: ${msg}</p>
+                        <p><b>Satır/Sütun:</b> ${line}:${col}</p>
+                        <p><b>Dosya:</b> ${url}</p>
+                        ${error && error.stack ? `<p class="mt-2 text-[10px] text-slate-400 border-t pt-2 whitespace-pre-wrap"><b>Yığın İzi (Stack):</b><br>${error.stack}</p>` : ''}
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="window.location.reload()" class="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95">Sayfayı Yenile</button>
+                        <button onclick="navigator.clipboard.writeText('${(msg || '').replace(/'/g, "\\'")}\\nSatır: ${line}:${col}\\nDosya: ${url}')" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">Hatayı Kopyala</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(errScreen);
             return false;
         };
     </script>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
-
-        // =================================================================
-        // SENİN FIREBASE AYARLARIN
-        // =================================================================
-       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyAZwrXlgKc5Oa47IyyA5mmTgRLlYKr58ag",
-  authDomain: "trip-64cb9.firebaseapp.com",
-  projectId: "trip-64cb9",
-  storageBucket: "trip-64cb9.firebasestorage.app",
-  messagingSenderId: "580909327374",
-  appId: "1:580909327374:web:d20cee86aeb2428814885f",
-  measurementId: "G-HH8VTQCG3G"
-};
-        
-        let firebaseConfig;
-        let activeAppId = 'omos-trip-app';
-        let useEnvToken = true;
-
+    <script>
         try {
-            if (SENIN_FIREBASE_AYARLARIN) {
-                firebaseConfig = SENIN_FIREBASE_AYARLARIN;
-                useEnvToken = false; 
-            } else if (typeof __firebase_config !== 'undefined') {
-                firebaseConfig = JSON.parse(__firebase_config);
-                if (typeof __app_id !== 'undefined') activeAppId = __app_id;
-            } else {
-                throw new Error("Firebase config bulunamadı.");
-            }
-        } catch (e) { console.error(e); throw e; }
+            const firebaseConfig = window.APP_CONFIG.firebase;
+            const app = firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        try { const analytics = getAnalytics(app); } catch (e) {}
-
-        window.Firebase = {
-            auth, db, appId: activeAppId,
-            signInAnonymously, signInWithCustomToken, onAuthStateChanged,
-            collection, addDoc, onSnapshot, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp,
-            initialToken: (typeof __initial_auth_token !== 'undefined' && useEnvToken) ? __initial_auth_token : null
-        };
-        window.dispatchEvent(new Event('firebase-ready'));
+            window.Firebase = {
+                auth: auth,
+                db: db,
+                signInAnonymously: (authInstance) => authInstance.signInAnonymously(),
+                onAuthStateChanged: (authInstance, callback) => authInstance.onAuthStateChanged(callback),
+                collection: (dbInstance, collectionName) => dbInstance.collection(collectionName),
+                addDoc: (collectionRef, data) => collectionRef.add(data),
+                onSnapshot: (queryInstance, callback, errorCallback) => {
+                    return queryInstance.onSnapshot(snapshot => {
+                        callback(snapshot);
+                    }, errorCallback);
+                },
+                deleteDoc: (docRef) => docRef.delete(),
+                updateDoc: (docRef, data) => docRef.update(data),
+                doc: (dbInstance, collectionName, docId) => dbInstance.collection(collectionName).doc(docId),
+                query: (collectionRef) => collectionRef.orderBy('timestamp', 'desc'),
+                serverTimestamp: () => firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            window.dispatchEvent(new Event('firebase-ready'));
+        } catch (e) {
+            console.error("Firebase Compat Init Error:", e);
+            // Global hata tetikleyiciye yolla
+            window.onerror(e.message, "firebase-init.js", 0, 0, e);
+        }
     </script>
 
     <script type="text/babel">
@@ -170,7 +196,13 @@ const firebaseConfig = {
             Sparkles: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 5h4"/><path d="M3 9h4"/></svg>,
             Search: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
             Share: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>,
-            Gift: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+            Gift: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>,
+            Edit: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+            Clock: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            Refresh: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>,
+            X: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+            Check: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+            Bot: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2" /><circle cx="12" cy="5" r="2" /><path d="M12 7v4" /><line x1="8" y1="16" x2="8.01" y2="16" /><line x1="16" y1="16" x2="16.01" y2="16" /></svg>
         };
 
         const MOODS = [
@@ -184,16 +216,170 @@ const firebaseConfig = {
             { id: 'ok', emoji: '👍', label: 'Peki 👍', bg: 'bg-emerald-50', border: 'border-emerald-200' }
         ];
 
+        const WHEEL_OPTIONS = ["Öpücük 😘", "Starbucks ☕", "3 saat trip ⏰", "Waffle 🧇", "Sarılmak 🤗", "Sephora 💄", "Masaj 💆‍♂️", "Barış! 🎉"];
+
         const Toast = ({ message, type, onClose }) => {
             const bgClass = type === 'error' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600';
+            const Icon = type === 'error' ? Icons.X : Icons.Check;
             return (
-                <div className={`toast-enter fixed top-4 right-4 z-[999] flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border ${bgClass} backdrop-blur-md`}>
+                <div className={`toast-enter fixed top-4 right-4 z-[9999] flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border ${bgClass} backdrop-blur-md`}>
+                    <Icon size={18} />
                     <span className="text-sm font-bold">{message}</span>
+                    <button onClick={onClose} className="opacity-50 hover:opacity-100 ml-2"><Icons.X size={14}/></button>
                 </div>
             );
         };
 
-        function App() {
+        function KrizSüresi({ timestamp }) {
+            const [timeText, setTimeText] = useState("");
+            useEffect(() => {
+                if (!timestamp) return;
+                const calculate = () => {
+                    const diffMs = Date.now() - (timestamp.seconds * 1000);
+                    const mins = Math.floor(diffMs / 60000);
+                    const hrs = Math.floor(mins / 60);
+                    const days = Math.floor(hrs / 24);
+
+                    if (days > 0) setTimeText(`${days} gündür küs`);
+                    else if (hrs > 0) setTimeText(`${hrs} saattir küs`);
+                    else if (mins > 0) setTimeText(`${mins} dk'dır küs`);
+                    else setTimeText("Az önce başladı");
+                };
+                calculate();
+                const interval = setInterval(calculate, 30000);
+                return () => clearInterval(interval);
+            }, [timestamp]);
+            if (!timeText) return null;
+            return <span className="text-[10px] font-black bg-rose-50 text-rose-500 px-2 py-0.5 rounded-md flex items-center gap-1 border border-rose-100"><Icons.Clock size={11} className="animate-pulse" />{timeText}</span>;
+        }
+
+        function MoodAnalyzerBar({ trips }) {
+            const activeTrips = trips.filter(t => !t.resolved);
+            const total = activeTrips.length;
+            if (total === 0) return null;
+            const counts = MOODS.map(m => {
+                const num = activeTrips.filter(t => t.mood?.id === m.id).length;
+                return { ...m, num, pct: (num / total) * 100 };
+            }).filter(item => item.num > 0);
+
+            return (
+                <div className="bg-white/75 backdrop-blur-sm rounded-2xl p-4 shadow-sm border border-pink-50">
+                    <h4 className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Aktif Hissiyat</h4>
+                    <div className="flex h-3 w-full rounded-full overflow-hidden bg-slate-100 mb-2">
+                        {counts.map(c => <div key={c.id} style={{ width: `${c.pct}%` }} className={`${c.bg.replace('-50', '-400')} transition-all`} />)}
+                    </div>
+                </div>
+            );
+        }
+
+        function AfCarkiModal({ isOpen, onClose, addToast }) {
+            const [spinning, setSpinning] = useState(false);
+            const [rotation, setRotation] = useState(0);
+            const [result, setResult] = useState("");
+
+            if (!isOpen) return null;
+
+            const handleSpin = () => {
+                if (spinning) return;
+                setSpinning(true); setResult("");
+                const randomDegrees = Math.floor(Math.random() * 360) + 1440;
+                const newRotation = rotation + randomDegrees;
+                setRotation(newRotation);
+                setTimeout(() => {
+                    setSpinning(spinning => false);
+                    const index = Math.floor(((360 - (newRotation % 360) + (360/WHEEL_OPTIONS.length)/2) % 360) / (360/WHEEL_OPTIONS.length));
+                    const selectedOption = WHEEL_OPTIONS[index];
+                    setResult(selectedOption);
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                    addToast(`Kader Belirlendi: ${selectedOption}! 🎡`);
+                }, 4000);
+            };
+
+            return (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-enter">
+                    <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 w-full max-w-sm border border-pink-100 shadow-2xl relative">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400"><Icons.X size={24} /></button>
+                        <h3 className="text-xl font-black text-center mb-6 bg-gradient-to-r from-rose-500 to-purple-600 bg-clip-text text-transparent italic">Kader Çarkı</h3>
+                        <div className="relative w-48 h-48 mx-auto mb-6 flex items-center justify-center">
+                            <div className="absolute top-0 z-30 text-rose-500 text-2xl transform -translate-y-2">▼</div>
+                            <div className="w-full h-full rounded-full border-4 border-rose-300 shadow-xl overflow-hidden relative wheel-spin flex items-center justify-center" style={{ transform: `rotate(${rotation}deg)` }}>
+                                {WHEEL_OPTIONS.map((opt, i) => (
+                                    <div key={i} className="absolute h-full w-full origin-center flex justify-center text-[8px] font-bold" style={{ transform: `rotate(${i * (360/WHEEL_OPTIONS.length)}deg)` }}>
+                                        <span className="mt-4">{opt}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        {result && <div className="text-center bg-rose-50 p-3 rounded-xl mb-4 font-bold text-rose-600">{result}</div>}
+                        <button onClick={handleSpin} disabled={spinning} className="w-full bg-rose-500 text-white font-bold py-3 rounded-xl shadow-lg">{spinning ? "DÖNÜYOR..." : "ÇEVİR"}</button>
+                    </div>
+                </div>
+            );
+        }
+
+        function GeminiAiModal({ isOpen, onClose, tripReason, tripAction, addToast }) {
+            const [aiMessage, setAiMessage] = useState("");
+            const [aiLoading, setAiLoading] = useState(false);
+            const [aiError, setAiError] = useState(null);
+
+            useEffect(() => { if (isOpen && tripReason) generateApology(); }, [isOpen, tripReason]);
+
+            const generateApology = async () => {
+                setAiLoading(true); setAiMessage(""); setAiError(null);
+                const apiKey = window.APP_CONFIG.geminiApiKey; 
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                try {
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: `Diloş bana şu sebepten trip atıyor: "${tripReason}". Uyguladığı ceza ise: "${tripAction}". Ona kendimi affettirebileceğim, içinde bolca sevgi barındıran ama aynı zamanda yüzünü güldürecek, komik ve samimi bir özür mesajı yazar mısın? Sadece mesaj metnini ver.` }] }] })
+                    });
+                    if (!res.ok) throw new Error(`HTTP Hata: ${res.status}`);
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error.message || "Bilinmeyen Gemini Hatası");
+                    setAiMessage(data.candidates?.[0]?.content?.parts?.[0]?.text || "Seni çok seviyorum ❤️");
+                } catch (err) { 
+                    setAiError(err.message);
+                    setAiMessage("Diloşum, hayatımın anlamı... Seni kırdığım için çok pişmanım. Dünyadaki en güzel çikolata ve kahvelerle kapına gelmeye hazırım, yeter ki o güzel yüzün bana yeniden gülsün! ❤️"); 
+                    addToast("Yapay zekaya bağlanılamadı. Varsayılan mesaj yüklendi.", "error");
+                } finally { setAiLoading(false); }
+            };
+
+            if (!isOpen) return null;
+
+            const copyApology = () => {
+                const tempTextArea = document.createElement("textarea");
+                tempTextArea.value = aiMessage;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                addToast("Özür mesajı kopyalandı! 📋");
+            };
+
+            return (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-enter">
+                    <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 w-full max-w-sm border border-pink-100 shadow-2xl relative">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400"><Icons.X size={24} /></button>
+                        <h3 className="text-center font-bold text-rose-500 mb-4">Gemini Gönül Alma Asistanı</h3>
+                        
+                        <div className="bg-rose-50/50 p-4 rounded-2xl mb-2 text-xs italic leading-relaxed max-h-48 overflow-y-auto">
+                            {aiLoading ? "Gemini düşünüyor..." : aiMessage}
+                        </div>
+
+                        {aiError && (
+                            <div className="p-2 mb-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-[10px] font-mono break-all">
+                                <b>Bağlantı Hatası:</b> {aiError}
+                            </div>
+                        )}
+
+                        <button onClick={copyApology} disabled={aiLoading || !aiMessage} className="w-full bg-rose-500 text-white py-3 rounded-xl font-bold">Kopyala</button>
+                    </div>
+                </div>
+            );
+        }
+
+        const MainComposition = () => {
             const [trips, setTrips] = useState([]);
             const [filteredTrips, setFilteredTrips] = useState([]);
             const [newReason, setNewReason] = useState("");
@@ -205,41 +391,35 @@ const firebaseConfig = {
             const [filter, setFilter] = useState('all'); 
             const [searchTerm, setSearchTerm] = useState("");
             const [toasts, setToasts] = useState([]);
+            const [wheelOpen, setWheelOpen] = useState(false);
+            const [editingId, setEditingId] = useState(null);
+            const [geminiOpen, setGeminiOpen] = useState(false);
+            const [activeGeminiTrip, setActiveGeminiTrip] = useState(null);
+            
+            // Canlı Hata Tespit State'leri (Hata kodlarını görselleştirmek için)
+            const [firebaseErrorCode, setFirebaseErrorCode] = useState(null);
+            const [firebaseRawErrorMessage, setFirebaseRawErrorMessage] = useState("");
+            const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
             const fb = window.Firebase;
-
+            
             const addToast = (msg, type = 'success') => {
                 const id = Date.now();
                 setToasts(prev => [...prev, { id, msg, type }]);
-                setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
-            };
-
-            const calculateCost = (level) => {
-                if(level <= 2) return "Tatlı bir mesaj ve sıkı sarılma 🥰";
-                if(level <= 4) return "En sevilen kahve ve çikolata ikilisi 🍫☕";
-                if(level <= 6) return "Güzel ve baş başa bir akşam yemeği 🍕";
-                if(level <= 8) return "Gönül alma hediyesi / Kozmetik alışverişi 💄";
-                if(level <= 9) return "Harika bir hafta sonu kaçamağı / Tatil 🏖️";
-                return "Sonsuz sadakat ve PS5 / Tektaş 💍🎮";
+                setTimeout(() => toasts(prev => prev.filter(t => t.id !== id)), 3000);
             };
 
             useEffect(() => {
                 if (!fb) return;
-                const initAuth = async () => {
-                    try {
-                        if (fb.initialToken) await fb.signInWithCustomToken(fb.auth, fb.initialToken);
-                        else await fb.signInAnonymously(fb.auth);
-                    } catch (err) { 
-                        console.error("Giriş hatası:", err); 
-                        setLoading(false);
-                        addToast("Giriş hatası! Lütfen Firebase Authentication'dan 'Anonymous' girişi açın.", "error"); 
-                    }
-                };
-                initAuth();
-                
-                const unsubscribe = fb.onAuthStateChanged(fb.auth, (u) => {
-                    setUser(u);
-                    if (!u) setLoading(false);
+                fb.signInAnonymously(fb.auth).catch(err => { 
+                    console.error("Giriş başarısız:", err); 
+                    setFirebaseErrorCode(err.code || "auth-error");
+                    setFirebaseRawErrorMessage(err.message || "");
+                    setLoading(false); 
+                });
+                const unsubscribe = fb.onAuthStateChanged(fb.auth, (u) => { 
+                    setUser(u); 
+                    if(!u) setLoading(false); 
                 });
                 return () => unsubscribe();
             }, []);
@@ -247,17 +427,19 @@ const firebaseConfig = {
             useEffect(() => {
                 if (!user || !fb) return;
                 const q = fb.query(fb.collection(fb.db, 'omos_trips'));
-                const unsubscribe = fb.onSnapshot(q, (snapshot) => {
+                return fb.onSnapshot(q, (snapshot) => {
                     const loadedTrips = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     loadedTrips.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                     setTrips(loadedTrips);
+                    setFirebaseErrorCode(null); // Başarılı bağlantıda hatayı temizle
+                    setFirebaseRawErrorMessage("");
                     setLoading(false);
-                }, (error) => {
-                    console.error("Veri çekme hatası:", error);
+                }, (err) => {
+                    console.error("Firestore sync error:", err);
+                    setFirebaseErrorCode(err.code || "firestore-error");
+                    setFirebaseRawErrorMessage(err.message || "");
                     setLoading(false);
-                    addToast("Veritabanı okuma izniniz yok. Firestore Rules ayarlarını kontrol edin.", "error");
                 });
-                return () => unsubscribe();
             }, [user]);
 
             useEffect(() => {
@@ -273,279 +455,221 @@ const firebaseConfig = {
             }, [trips, filter, searchTerm]);
 
             const handleAddTrip = async () => {
-                if (!user) { addToast("Bağlantı yok!", "error"); return; }
-                if (!newReason || !newAction) return;
-                
+                if (!user) {
+                    addToast("Lütfen bağlantı hatasını düzeltin!", "error");
+                    return;
+                }
                 try {
-                    await fb.addDoc(fb.collection(fb.db, 'omos_trips'), {
-                        reason: newReason,
-                        action: newAction,
-                        date: new Date().toLocaleDateString('tr-TR'),
-                        intensity: intensity,
-                        mood: selectedMood,
-                        resolved: false,
-                        timestamp: fb.serverTimestamp(),
-                        creatorId: user.uid
-                    });
-                    setNewReason(""); setNewAction("");
-                    setIntensity(5); setSelectedMood(MOODS[0]);
-                    addToast("Trip başarıyla yayınlandı!");
+                    if (editingId) {
+                        await fb.updateDoc(fb.doc(fb.db, 'omos_trips', editingId), { reason: newReason, action: newAction, intensity, mood: selectedMood });
+                        setEditingId(null); addToast("Güncellendi!");
+                    } else {
+                        await fb.addDoc(fb.collection(fb.db, 'omos_trips'), { reason: newReason, action: newAction, date: new Date().toLocaleDateString('tr-TR'), intensity, mood: selectedMood, resolved: false, timestamp: fb.serverTimestamp(), creatorId: user.uid });
+                        addToast("Yayınlandı!");
+                    }
+                    setNewReason(""); setNewAction(""); setIntensity(5); setSelectedMood(MOODS[0]);
                 } catch (error) { 
-                    console.error(error);
-                    addToast("Kayıt başarısız! Veritabanı (Firestore) yazma izniniz yok.", "error"); 
+                    addToast("Kaydedilemedi!", "error"); 
+                    setFirebaseErrorCode(error.code || "write-error");
+                    setFirebaseRawErrorMessage(error.message || "");
                 }
             };
 
             const toggleResolve = async (id, currentStatus) => {
-                if(!user) return;
                 try {
-                    const tripRef = fb.doc(fb.db, 'omos_trips', id);
-                    await fb.updateDoc(tripRef, { resolved: !currentStatus });
-                    if(!currentStatus) {
-                        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                        addToast("Barış sağlandı! 🎉");
-                    } else {
-                        addToast("Trip geri alındı!", "error");
-                    }
-                } catch (e) { addToast("İşlem başarısız.", "error"); }
+                    await fb.updateDoc(fb.doc(fb.db, 'omos_trips', id), { resolved: !currentStatus });
+                    if(!currentStatus) { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); addToast("Barışıldı! 🎉"); }
+                } catch (e) { addToast("Hata!", "error"); }
             };
 
-            const handleDelete = async (id) => {
-                if(!user) return;
-                if(confirm("Silmek istediğine emin misin?")) {
-                    try { 
-                        await fb.deleteDoc(fb.doc(fb.db, 'omos_trips', id)); 
-                        addToast("Kayıt silindi.");
-                    } catch (e) { console.error(e); }
+            const startEditing = (trip) => {
+                setEditingId(trip.id);
+                setNewReason(trip.reason);
+                setNewAction(trip.action);
+                setIntensity(trip.intensity);
+                setSelectedMood(trip.mood || MOODS[0]);
+                addToast("Kriz düzenleniyor... ✍️");
+            };
+
+            const triggerDelete = (id) => {
+                setConfirmDeleteId(id);
+            };
+
+            const performDelete = async (id) => {
+                try {
+                    await fb.deleteDoc(fb.doc(fb.db, 'omos_trips', id));
+                    addToast("Kayıt başarıyla silindi.");
+                    setConfirmDeleteId(null);
+                } catch(e) {
+                    addToast("Silinemedi!", "error");
                 }
             };
 
             const handleShare = (trip) => {
-                const text = `📢 *ÖMOŞ & DİLOŞ TRİPMATİK* 📢\n\n🎯 *Olay Sebebi:* ${trip.reason}\n⚖️ *Uygulanan Tarife:* ${trip.action}\n🔥 *Kriz Şiddeti:* ${trip.intensity}/10\n💰 *Gönül Alma Bedeli:* ${calculateCost(trip.intensity)}\n\n_Bu bir resmi tebligattır, hızlıca barışılması rica olunur._`;
-                
-                const javaTextArea = document.createElement("textarea");
-                javaTextArea.value = text;
-                javaTextArea.style.position = "fixed";
-                javaTextArea.style.left = "-9999px";
-                javaTextArea.style.top = "0";
-                document.body.appendChild(javaTextArea);
-                javaTextArea.focus();
-                javaTextArea.select();
-                
-                try {
-                    const successful = document.execCommand('copy');
-                    if (successful) {
-                        addToast("Metin kopyalandı! WhatsApp'ya yapıştır.");
-                    } else {
-                        addToast("Kopyalama başarısız", "error");
-                    }
-                } catch (err) {
-                    console.error('Kopyalama başarısız', err);
-                    addToast("Kopyalama başarısız", "error");
-                }
-                
-                document.body.removeChild(javaTextArea);
+                const text = `📢 *ÖMOŞ & DİLOŞ TRİPMATİK* 📢\n\n🎯 *Olay Sebebi:* ${trip.reason}\n⚖️ *Uygulanan Tarife:* ${trip.action}\n🔥 *Kriz Şiddeti:* ${trip.intensity}/10\n\n_Bu bir resmi tebligattır, hızlıca barışılması rica olunur._`;
+                const tempTextArea = document.createElement("textarea");
+                tempTextArea.value = text;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                addToast("Tebligat kopyalandı! 📋");
             };
-
-            const handleRandomTrip = () => {
-                const randomReasons = [
-                    { r: "Diloş rüyasında Ömoş'un onu aldattığını gördü ve sabah günaydın demedi.", a: "Kapılar biraz sert kapatıldı, soğuk savaş başladı." },
-                    { r: "Ömoş, Diloş'un WhatsApp storysine anında alev atmadı, sadece beğendi.", a: "Bütün eski fotoğraflar arşivlendi, biyografi silindi." },
-                    { r: "Diloş tam çok heyecanlı bir şey anlatırken Ömoş'un gözü telefona daldı.", a: "Modem fişi saklandı, 2 saat tek kelime edilmedi." },
-                    { r: "Diloş saçının ucundan tam 1 cm kestirdi ama Ömoş hiç fark etmedi.", a: "'Sen beni hiç dikkatli dinlemiyorsun' sunumu başladı." },
-                    { r: "Ömoş mesajlara tam 4 dakika 20 saniye boyunca geç cevap verdi.", a: "Görüldü atıldı, bilerek yarım saat yazılmadı." },
-                    { r: "Akşam ne yiyeceğimize karar verilemedi ve 'sen bilirsin' krizi çıktı.", a: "Karşılıklı açlık grevi ve somurtma seansı." },
-                    { r: "Ömoş, Diloş'un en sevdiği dizinin yeni bölümünü gizlice tek başına izlemiş.", a: "Netflix şifresi değiştirildi, büyük ambargo." }
-                ];
-                const random = randomReasons[Math.floor(Math.random() * randomReasons.length)];
-                setNewReason(random.r); setNewAction(random.a);
-                setIntensity(Math.floor(Math.random() * 5) + 5);
-                setSelectedMood(MOODS[Math.floor(Math.random() * MOODS.length)]);
-                addToast("Rastgele Ömoş & Diloş senaryosu yüklendi!");
-            };
-
-            const totalTrips = trips.length;
-            const resolvedCount = trips.filter(t => t.resolved).length;
-            const successRate = totalTrips > 0 ? Math.round((resolvedCount / totalTrips) * 100) : 0;
 
             return (
                 <div className="max-w-5xl mx-auto p-4 md:p-8 font-sans text-slate-800">
-                    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+                    <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2">
                         {toasts.map(t => <Toast key={t.id} message={t.msg} type={t.type} onClose={() => setToasts(prev => prev.filter(i => i.id !== t.id))} />)}
                     </div>
-
+                    
                     <header className="text-center mb-10 relative z-10 animate-enter">
                         <div className="inline-flex relative mb-4">
                             <div className="absolute inset-0 bg-rose-400 blur-xl opacity-30 rounded-full animate-pulse"></div>
-                            <div className="relative bg-white p-5 rounded-full shadow-lg border-4 border-rose-50">
-                                <Icons.HeartCrack className="w-12 h-12 text-rose-500" />
-                            </div>
+                            <div className="relative bg-white p-5 rounded-full shadow-lg border-4 border-rose-50"><Icons.HeartCrack className="w-12 h-12 text-rose-500" /></div>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight drop-shadow-sm">
-                            Ömoş & Diloş <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-purple-600">Tripmatik</span>
-                        </h1>
-                        <p className="text-slate-500 font-medium mt-2 text-md">v5.5 Limited Custom Edition</p>
+                        <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight italic">Ömoş & Diloş <span className="text-rose-500">Tripmatik</span></h1>
+                        <p className="text-slate-500 font-bold mt-2 text-md">v5.5 Limited Custom Edition</p>
                     </header>
 
-                    <div className="grid lg:grid-cols-12 gap-8">
-                        {/* FORM */}
-                        <div className="lg:col-span-5 space-y-6 animate-enter" style={{animationDelay: '0.1s'}}>
-                            <div className="glass rounded-[32px] p-6 shadow-xl sticky top-6 border border-white/50">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                        <span className="bg-rose-100 text-rose-600 p-2 rounded-xl"><Icons.Zap size={20}/></span>
-                                        Yeni Kriz Girişi
-                                    </h2>
-                                    <button onClick={handleRandomTrip} className="text-xs bg-purple-50 text-purple-600 px-3 py-1.5 rounded-full font-bold hover:bg-purple-100 transition-colors border border-purple-100 flex items-center gap-1">
-                                        <Icons.Sparkles size={14}/> Otomatik
-                                    </button>
-                                </div>
-
-                                <div className="space-y-5">
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-400 mb-2 block uppercase tracking-wider">Mevcut Durum</label>
-                                        
-                                        {}
-                                        <div className="grid grid-cols-4 gap-2">
-                                            {MOODS.map(mood => (
-                                                <button key={mood.id} onClick={() => setSelectedMood(mood)}
-                                                    className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 transition-all duration-200 ${selectedMood.id === mood.id ? `${mood.bg} ${mood.border} scale-110 shadow-md z-10` : 'bg-white border-transparent hover:bg-slate-50'}`}>
-                                                    <span className="text-2xl filter drop-shadow-sm">{mood.emoji}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                        <div className="text-center mt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedMood.label}</div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label className="text-xs font-bold text-slate-400 mb-1 block ml-1">TRİP SEBEBİ</label>
-                                            <textarea value={newReason} onChange={(e) => setNewReason(e.target.value)} className="w-full p-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-rose-400 focus:ring-4 focus:ring-rose-100 transition-all resize-none h-24 outline-none font-medium" placeholder="Olay tam olarak nasıl gerçekleşti?..." />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-slate-400 mb-1 block ml-1">UYGULANAN TARİFE / CEZA</label>
-                                            <input type="text" value={newAction} onChange={(e) => setNewAction(e.target.value)} className="w-full p-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-rose-400 focus:ring-4 focus:ring-rose-100 transition-all outline-none font-medium" placeholder="Şu an hangi ceza devrede?" />
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                                        <div className="flex justify-between mb-3 items-center">
-                                            <label className="text-xs font-bold text-slate-400 uppercase">Kriz Şiddeti</label>
-                                            <span className={`text-xs font-bold px-2 py-1 rounded-lg text-white ${intensity > 7 ? 'bg-red-500 animate-pulse' : 'bg-slate-400'}`}>{intensity} / 10</span>
-                                        </div>
-                                        <input type="range" min="1" max="10" value={intensity} onChange={(e) => setIntensity(Number(e.target.value))} />
-                                        <div className="mt-2 text-center text-xs font-bold text-purple-600 bg-purple-50 p-2 rounded-lg">
-                                            Gönül Alma Bedeli: <span className="block text-slate-700 font-medium mt-1">{calculateCost(intensity)}</span>
-                                        </div>
-                                    </div>
-
-                                    <button onClick={handleAddTrip} disabled={!newReason || !newAction} className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-lg shadow-slate-200 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 group">
-                                        <Icons.Plus size={20} className="group-hover:rotate-90 transition-transform"/> Listeye İşle
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* LISTE PANELİ */}
-                        <div className="lg:col-span-7 space-y-6 animate-enter" style={{animationDelay: '0.2s'}}>
+                    {/* Canlı Firebase Teşhis / Hata Bildirim Paneli */}
+                    {firebaseErrorCode && (
+                        <div className="mb-8 p-6 bg-red-50 border-2 border-dashed border-red-300 rounded-[32px] max-w-2xl mx-auto text-center shadow-lg animate-enter">
+                            <div className="text-4xl mb-2">⚠️</div>
+                            <h3 className="text-lg font-black text-red-700">Firebase Konsolunda Adımları Tamamlamadın!</h3>
                             
-                            {/* Firebase Hata Gösterimi */}
-                            {!user && !loading && (
-                                <div className="glass p-8 rounded-[32px] text-center border-2 border-dashed border-rose-300 bg-rose-50/50">
-                                    <div className="text-4xl mb-4">🚨</div>
-                                    <p className="text-rose-600 font-bold text-lg mb-2">Veritabanı Bağlantısı Kurulamadı</p>
-                                    <div className="text-sm text-slate-600 text-left bg-white/70 p-4 rounded-xl inline-block shadow-sm">
-                                        Lütfen Firebase Console'dan <b>Authentication -> Anonymous</b> giriş yöntemini aktif ettiğinden emin ol.
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <div className="glass p-5 rounded-3xl flex flex-col justify-center items-center text-center">
-                                    <span className="text-3xl font-black text-rose-500">{totalTrips}</span>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase mt-1">Toplam Vaka</span>
-                                </div>
-                                <div className="glass p-5 rounded-3xl flex flex-col justify-center items-center text-center relative overflow-hidden">
-                                    <svg className="absolute w-full h-full opacity-10 text-emerald-500" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="10" fill="none" strokeDasharray={`${successRate * 2.5} 250`} transform="rotate(-90 50 50)" /></svg>
-                                    <span className="text-3xl font-black text-emerald-500 relative z-10">%{successRate}</span>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase mt-1 relative z-10">Barışma Oranı</span>
-                                </div>
-                                <div className="hidden md:flex glass p-5 rounded-3xl flex-col justify-center items-center text-center">
-                                    <span className="text-3xl font-black text-purple-500">{loading ? '-' : trips.length - resolvedCount}</span>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase mt-1">Aktif Kriz</span>
-                                </div>
+                            {/* Orijinal Hata Kodu Gösterim Alanı */}
+                            <div className="my-3 px-3 py-2 bg-red-100 rounded-xl inline-block text-xs font-mono text-red-800">
+                                <b>Hata Kodu (Code):</b> {firebaseErrorCode} <br />
+                                <b>Hata Mesajı:</b> {firebaseRawErrorMessage || "Detaylı mesaj dönmedi."}
                             </div>
 
-                            <div className="flex flex-col md:flex-row gap-3">
-                                <div className="relative flex-1">
-                                    <div className="absolute left-3 top-3 text-slate-400"><Icons.Search size={18}/></div>
-                                    <input type="text" placeholder="Gelişmiş kriz araması..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
-                                        className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm font-bold text-slate-700 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-200 shadow-sm" />
-                                </div>
-                                <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-100">
-                                    {['all', 'active', 'resolved'].map(f => (
-                                        <button key={f} onClick={() => setFilter(f)}
-                                            className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${filter === f ? 'bg-rose-500 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>
-                                            {f === 'all' ? 'Tümü' : f === 'active' ? 'Aktif' : 'Barışılanlar'}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {}
-                            <div className="space-y-4 pb-24">
-                                {loading ? (
-                                    <div className="glass p-12 rounded-[32px] text-center text-rose-400 animate-pulse">Veriler Sunucudan Çekiliyor...</div>
-                                ) : filteredTrips.length === 0 && user ? (
-                                    <div className="glass p-12 rounded-[32px] text-center border-2 border-dashed border-slate-200">
-                                        <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Smile className="text-slate-300 w-8 h-8"/></div>
-                                        <p className="text-slate-500 font-bold">Her şey sakin!</p>
-                                        <p className="text-xs text-slate-400 mt-1">Gösterilecek kriz kaydı bulunmuyor.</p>
-                                    </div>
+                            <p className="text-sm text-slate-600 mt-2">
+                                Kod tarafındaki bağlantı ayarların mükemmel ama veritabanını aktif etmedin. Lütfen Firebase Console web sitesini aç ve şu adımları hemen yap:
+                            </p>
+                            <div className="text-xs text-left bg-white/80 p-4 rounded-2xl mt-4 border border-red-100 space-y-2">
+                                {firebaseErrorCode.includes("auth") || firebaseErrorCode.includes("operation-not-allowed") ? (
+                                    <>
+                                        <p className="font-bold text-red-600">Sorun: Anonim Giriş Kapalı</p>
+                                        <p>1. <a href="https://console.firebase.google.com" target="_blank" className="text-blue-500 underline">Firebase Console</a> sitesine git.</p>
+                                        <p>2. Projenden <b>Authentication</b> sayfasını aç.</p>
+                                        <p>3. <b>Sign-in method</b> sekmesine tıkla ve <b>Anonymous (Anonim)</b> girişi aktif edip kaydet.</p>
+                                    </>
                                 ) : (
-                                    filteredTrips.map((trip, idx) => (
-                                        <div key={trip.id} className={`glass-card p-6 rounded-[28px] relative group transition-all duration-500 hover:z-10 ${trip.resolved ? 'opacity-75 grayscale-[0.5]' : ''}`} style={{animation: `fadeInUp 0.5s ease-out forwards ${idx * 0.05}s`, opacity: 0}}>
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="text-4xl filter drop-shadow-md hover:scale-110 transition-transform" title={trip.mood?.label}>{trip.mood?.emoji}</div>
-                                                    <div>
-                                                        <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-lg uppercase tracking-wide">{trip.date}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => handleShare(trip)} className="p-2 rounded-xl bg-indigo-50 text-indigo-500 hover:bg-indigo-100 transition-colors shadow-sm" title="WhatsApp Tebligat Olarak Kopyala"><Icons.Share size={18}/></button>
-                                                    <button onClick={() => toggleResolve(trip.id, trip.resolved)} className={`p-2 rounded-xl transition-colors shadow-sm ${trip.resolved ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`} title="Barış İlan Et"><Icons.CheckCircle size={18}/></button>
-                                                    <button onClick={() => handleDelete(trip.id)} className="p-2 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition-colors shadow-sm"><Icons.Trash2 size={18}/></button>
-                                                </div>
-                                            </div>
-                                            <div className="pl-1">
-                                                <h3 className={`text-lg font-bold text-slate-800 leading-snug mb-3 ${trip.resolved ? 'line-through decoration-2 decoration-emerald-300' : ''}`}>{trip.reason}</h3>
-                                                <div className={`p-4 rounded-2xl text-sm border ${trip.resolved ? 'bg-emerald-50/50 border-emerald-100 text-emerald-800' : 'bg-rose-50/30 border-rose-100 text-slate-700'}`}>
-                                                    <span className="font-bold text-xs uppercase opacity-60 block mb-1">Uygulanan Yaptırım / Ceza:</span> {trip.action}
-                                                </div>
-                                                <div className="flex items-center gap-2 mt-3">
-                                                    <span className="bg-purple-50 text-purple-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-purple-100"><Icons.Gift size={12}/> Hak Etme Bedeli: {calculateCost(trip.intensity)}</span>
-                                                </div>
-                                            </div>
-                                            <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden"><div className={`h-full ${trip.resolved ? 'bg-emerald-400' : 'bg-rose-500'}`} style={{width: `${trip.intensity * 10}%`}}></div></div>
-                                                    <span className="text-[10px] font-bold text-slate-400">{trip.intensity}/10</span>
-                                                </div>
-                                                {trip.resolved && <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1"><Icons.CheckCircle size={10} /> ÇÖZÜLDÜ</span>}
-                                            </div>
-                                        </div>
-                                    ))
+                                    <>
+                                        <p className="font-bold text-red-600">Sorun: Veritabanı (Firestore Database) veya Kuralları Kapalı</p>
+                                        <p>1. Firebase projenin sol menüsünden <b>Firestore Database</b> sayfasını aç.</p>
+                                        <p>2. Eğer henüz oluşturmadıysan <b>Create Database</b> butonuna basıp veritabanını kur.</p>
+                                        <p>3. Sayfanın üstündeki <b>Rules (Kurallar)</b> sekmesine git.</p>
+                                        <p>4. Kuralları şu şekilde değiştirip <b>Publish (Yayınla)</b> yap:</p>
+                                        <pre className="bg-slate-800 text-green-400 p-2 rounded-xl mt-2 overflow-x-auto text-[10px]">
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}`}
+                                        </pre>
+                                    </>
                                 )}
                             </div>
                         </div>
+                    )}
+
+                    <div className="grid lg:grid-cols-12 gap-8">
+                        {/* FORM PANELİ */}
+                        <div className="lg:col-span-5 space-y-6">
+                            <div className={`glass rounded-[32px] p-6 shadow-xl sticky top-6 border transition-all ${editingId ? 'ring-4 ring-yellow-400' : 'border-white/50'}`}>
+                                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                                    <span className={`p-2 rounded-xl text-white ${editingId ? 'bg-yellow-500' : 'bg-rose-500'}`}>{editingId ? <Icons.Edit size={20}/> : <Icons.Zap size={20}/>}</span>
+                                    {editingId ? "Krizi Düzenle" : "Yeni Kriz"}
+                                </h2>
+                                <div className="grid grid-cols-4 gap-2 mb-6">
+                                    {MOODS.map(mood => (
+                                        <button key={mood.id} onClick={() => setSelectedMood(mood)} className={`p-2.5 rounded-2xl border-2 transition-all ${selectedMood.id === mood.id ? `${mood.bg} ${mood.border} scale-110 shadow-md` : 'bg-white border-transparent'}`}>
+                                            <span className="text-2xl">{mood.emoji}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="space-y-4">
+                                    <textarea value={newReason} onChange={(e) => setNewReason(e.target.value)} className="w-full p-4 bg-white/50 border rounded-2xl text-sm outline-none h-24" placeholder="Olay ne?" />
+                                    <input type="text" value={newAction} onChange={(e) => setNewAction(e.target.value)} className="w-full p-4 bg-white/50 border rounded-2xl text-sm outline-none" placeholder="Cezası ne?" />
+                                    <div className="bg-white p-4 rounded-2xl border">
+                                        <div className="flex justify-between text-xs font-bold mb-2"><span>Şiddet</span><span className="text-rose-500">{intensity}/10</span></div>
+                                        <input type="range" min="1" max="10" value={intensity} onChange={(e) => setIntensity(Number(e.target.value))} />
+                                    </div>
+                                    <button onClick={handleAddTrip} disabled={!newReason} className={`w-full py-4 rounded-2xl text-white font-bold shadow-lg transition-all ${editingId ? 'bg-yellow-500' : 'bg-slate-800'}`}>
+                                        {editingId ? "GÜNCELLEMEYİ KAYDET" : "LİSTEYE İŞLE"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* LİSTE PANELİ */}
+                        <div className="lg:col-span-7 space-y-6">
+                            <div className="glass p-4 rounded-3xl flex justify-between items-center border-pink-100">
+                                <div><h4 className="text-sm font-bold">Cezaya Karar Veremiyor Musun? 🎡</h4></div>
+                                <button onClick={() => setWheelOpen(true)} className="bg-rose-500 text-white font-bold text-xs px-4 py-2 rounded-full">ÇARK ÇEVİR</button>
+                            </div>
+                            
+                            <MoodAnalyzerBar trips={trips} />
+                            
+                            <div className="flex bg-white p-1 rounded-xl shadow-sm border">
+                                {['all', 'active', 'resolved'].map(f => (
+                                    <button key={f} onClick={() => setFilter(f)} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${filter === f ? 'bg-rose-500 text-white shadow-md' : 'text-slate-400'}`}>
+                                        {f === 'all' ? 'Tümü' : f === 'active' ? 'Aktif' : 'Barışılanlar'}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            <div className="space-y-4 pb-24">
+                                {filteredTrips.map((trip, idx) => (
+                                    <div key={trip.id} className={`glass-card p-6 rounded-[28px] relative group transition-all duration-500 hover:z-10 ${trip.resolved ? 'opacity-75 grayscale-[0.5]' : ''}`} style={{animation: `fadeInUp 0.5s forwards ${idx * 0.05}s`}}>
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="text-4xl">{trip.mood?.emoji}</div>
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase">{trip.date}</span>
+                                                    {!trip.resolved && <KrizSüresi timestamp={trip.timestamp} />}
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => handleShare(trip)} className="p-2 rounded-xl bg-indigo-50 text-indigo-500 hover:bg-indigo-100 transition-colors shadow-sm" title="Paylaş"><Icons.Share size={18}/></button>
+                                                {!trip.resolved && (
+                                                    <button onClick={() => { setActiveGeminiTrip(trip); setGeminiOpen(true); }} className="p-2 rounded-xl bg-rose-50 text-rose-500 shadow-sm" title="Yapay Zeka ile Gönül Al"><Icons.Bot size={18}/></button>
+                                                )}
+                                                {!trip.resolved && <button onClick={() => startEditing(trip)} className="p-2 rounded-xl bg-yellow-50 text-yellow-600 shadow-sm" title="Düzenle"><Icons.Edit size={18}/></button>}
+                                                <button onClick={() => toggleResolve(trip.id, trip.resolved)} className={`p-2 rounded-xl transition-colors shadow-sm ${trip.resolved ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`} title="Barış"><Icons.CheckCircle size={18}/></button>
+                                                
+                                                {/* Onaylı Silme Mekanizması */}
+                                                {confirmDeleteId === trip.id ? (
+                                                    <div className="flex gap-1 items-center bg-red-100 rounded-xl px-2 py-1">
+                                                        <span className="text-[9px] font-bold text-red-700">Sil?</span>
+                                                        <button onClick={() => performDelete(trip.id)} className="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded font-bold">Evet</button>
+                                                        <button onClick={() => setConfirmDeleteId(null)} className="bg-slate-300 text-slate-700 text-[9px] px-2 py-0.5 rounded font-bold">Hayır</button>
+                                                    </div>
+                                                ) : (
+                                                    <button onClick={() => triggerDelete(trip.id)} className="p-2 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition-colors shadow-sm"><Icons.Trash2 size={18}/></button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <h3 className={`text-lg font-bold mb-3 ${trip.resolved ? 'line-through decoration-emerald-300' : ''}`}>{trip.reason}</h3>
+                                        <div className="bg-rose-50/30 border p-4 rounded-2xl text-sm"><span className="font-bold text-xs uppercase opacity-60 block mb-1">Ceza:</span> {trip.action}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
+                    
+                    <AfCarkiModal isOpen={wheelOpen} onClose={() => setWheelOpen(false)} addToast={addToast} />
+                    <GeminiAiModal isOpen={geminiOpen} onClose={() => setGeminiOpen(false)} tripReason={activeGeminiTrip?.reason} tripAction={activeGeminiTrip?.action} addToast={addToast} />
                 </div>
             );
         }
-
-        const initApp = () => { const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<App />); };
-        if (window.Firebase) { initApp(); } else { window.addEventListener('firebase-ready', initApp); setTimeout(() => { if (!window.Firebase) console.warn("Firebase gecikti..."); }, 3000); }
+        
+        const initApp = () => { ReactDOM.createRoot(document.getElementById('root')).render(<MainComposition />); };
+        if (window.Firebase) initApp(); else window.addEventListener('firebase-ready', initApp);
     </script>
 </body>
 </html>
