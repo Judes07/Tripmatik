@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ömoş & Diloş: Tripmatik Platinum</title>
+    <title>Ömoş & Diloş: Tripmatik V6</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React ve ReactDOM (UMD Sürümleri) -->
+    
+    <!-- React & ReactDOM (UMD - Tarayıcı Sürümleri) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel Standalone (Tarayıcıda derleme için) -->
+    
+    <!-- Babel (Tarayıcı içi JSX Derleyicisi) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Confetti Efekti için -->
+    
+    <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <!-- Firebase Geriye Dönük Uyumluluk (Compat) SDK'ları -->
+    <!-- Firebase Global Compat SDK'ları -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    
+
     <style>
-        
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap');
         
         body { 
             font-family: 'Quicksand', sans-serif; 
@@ -33,7 +37,6 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* Arka Plan */
         .bg-animated {
             background-image: url('background.jpg');
             background-size: cover;
@@ -46,41 +49,40 @@
         }
         @keyframes pulseBg { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
         }
         .glass-card:hover {
-            transform: translateY(-3px) scale(1.01);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 25px -5px rgba(244, 63, 94, 0.15);
             border-color: rgba(244, 63, 94, 0.3);
         }
 
+        /* Özel Range Input Tasarımı */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
-            background: #fff; border: 2px solid #f43f5e; cursor: pointer; margin-top: -10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.1s;
+            background: #fff; border: 3px solid #f43f5e; cursor: pointer; margin-top: -10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: transform 0.1s;
         }
-        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 4px; cursor: pointer;
-            background: linear-gradient(to right, #60a5fa, #c084fc, #f43f5e); border-radius: 2px;
+            width: 100%; height: 6px; cursor: pointer;
+            background: linear-gradient(to right, #60a5fa, #c084fc, #f43f5e); border-radius: 3px;
         }
 
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeInUp 0.5s ease-out forwards; }
-        .loading-dots:after { content: '.'; animation: dots 1.5s steps(5, end) infinite; }
-        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } 80%, 100% { content: ''; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-enter { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -89,152 +91,82 @@
     </style>
 </head>
 <body class="overflow-x-hidden">
-    
+    <!-- Arka Plan -->
     <div class="bg-animated"></div>
-
-    <!-- ================================================================= -->
-    <!-- ⚙️ TEK NOKTADAN HIZLI AYARLAR PANELİ ⚙️ -->
-    <!-- ================================================================= -->
-    <script>
-        window.APP_CONFIG = {
-            firebase: {
-                apiKey: "AIzaSyDFMsBnX3Uj1AeoJMsebRKs8yFKhIAsTLw",
-                authDomain: "tripmatikdata.firebaseapp.com",
-                projectId: "tripmatikdata",
-                storageBucket: "tripmatikdata.firebasestorage.app",
-                messagingSenderId: "327861092059",
-                appId: "1:327861092059:web:6f2dd0a870a89f4187d6fe",
-                measurementId: "G-2Q4XC62HYX"
-            },
-            geminiApiKey: "AQ.Ab8RN6Iw7Izhr1lQBeQ_fqZywdu09jrOqZ6MStk5ydLkdS8HKA"
-        };
-    </script>
     
-    <div id="root">
-        <div class="min-h-screen flex flex-col items-center justify-center text-rose-500">
-            <div class="text-5xl mb-4 animate-bounce">💖</div>
-            <div class="text-2xl font-bold mb-2">Ömoş & Diloş Tripmatik</div>
-            <div class="loading-dots text-sm font-semibold opacity-75">Aşk Paneli Yükleniyor</div>
-        </div>
-    </div>
+    <!-- React DOM Kök Elemanı -->
+    <div id="root"></div>
 
-    <!-- Global Javascript Hata Yakalayıcı Panel -->
-    <script>
-        window.onerror = function(msg, url, line, col, error) {
-            const root = document.getElementById('root');
-            const errScreen = document.getElementById('error-screen') || document.createElement('div');
-            errScreen.id = "error-screen";
-            errScreen.className = "fixed inset-0 z-[10000] bg-rose-50/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto";
-            errScreen.innerHTML = `
-                <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-2xl max-w-xl w-full border-2 border-red-200 animate-enter">
-                    <div class="flex items-center gap-4 mb-4 text-red-500">
-                        <span class="text-4xl">⚠️</span>
-                        <h3 class="text-2xl font-black text-slate-800">Sistem Çalışma Hatası!</h3>
-                    </div>
-                    <p class="text-slate-600 text-sm mb-4">Uygulama yüklenirken veya çalışırken kritik bir hata oluştu. Teknik detaylar aşağıda listelenmiştir:</p>
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs font-mono text-slate-700 space-y-2 max-h-60 overflow-y-auto mb-4">
-                        <p class="font-bold text-red-600">Hata Mesajı: ${msg}</p>
-                        <p><b>Satır/Sütun:</b> ${line}:${col}</p>
-                        <p><b>Dosya:</b> ${url}</p>
-                        ${error && error.stack ? `<p class="mt-2 text-[10px] text-slate-400 border-t pt-2 whitespace-pre-wrap"><b>Yığın İzi (Stack):</b><br>${error.stack}</p>` : ''}
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="window.location.reload()" class="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95">Sayfayı Yenile</button>
-                        <button onclick="navigator.clipboard.writeText('${(msg || '').replace(/'/g, "\\'")}\\nSatır: ${line}:${col}\\nDosya: ${url}')" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">Hatayı Kopyala</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(errScreen);
-            return false;
-        };
-    </script>
+    <!-- DİKKAT: Modül (import/export) hatası vermemesi için type="text/babel" kullanılmış, import/export KULLANILMAMIŞTIR -->
+    <script type="text/babel">
+        // React Hook'larını global nesneden alıyoruz
+        const { useState, useEffect } = window.React;
 
-    <script>
-        try {
-            const firebaseConfig = window.APP_CONFIG.firebase;
-            const app = firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+        /* ========================================================= */
+        /* ⚙️ AYARLAR KISMI: YENİ FIREBASE BİLGİLERİNİ BURAYA GİRİN ⚙️*/
+        /* ========================================================= */
+        const GEMINI_API_KEY = "AIzaSyDFMsBnX3Uj1AeoJMsebRKs8yFKhIAsTLw";
+        
+        // LÜTFEN YENİ OLUŞTURDUĞUNUZ PROJENİN KODLARINI BURAYA YAPIŞTIRIN:
+        const firebaseConfig = {
+  apiKey: "AIzaSyDFMsBnX3Uj1AeoJMsebRKs8yFKhIAsTLw",
+  authDomain: "tripmatikdata.firebaseapp.com",
+  projectId: "tripmatikdata",
+  storageBucket: "tripmatikdata.firebasestorage.app",
+  messagingSenderId: "327861092059",
+  appId: "1:327861092059:web:6f2dd0a870a89f4187d6fe",
+  measurementId: "G-2Q4XC62HYX"
+};
+        /* ========================================================= */
 
-            window.Firebase = {
-                auth: auth,
-                db: db,
-                signInAnonymously: (authInstance) => authInstance.signInAnonymously(),
-                onAuthStateChanged: (authInstance, callback) => authInstance.onAuthStateChanged(callback),
-                collection: (dbInstance, collectionName) => dbInstance.collection(collectionName),
-                addDoc: (collectionRef, data) => collectionRef.add(data),
-                onSnapshot: (queryInstance, callback, errorCallback) => {
-                    return queryInstance.onSnapshot(snapshot => {
-                        callback(snapshot);
-                    }, errorCallback);
-                },
-                deleteDoc: (docRef) => docRef.delete(),
-                updateDoc: (docRef, data) => docRef.update(data),
-                doc: (dbInstance, collectionName, docId) => dbInstance.collection(collectionName).doc(docId),
-                query: (collectionRef) => collectionRef.orderBy('timestamp', 'desc'),
-                serverTimestamp: () => firebase.firestore.FieldValue.serverTimestamp()
-            };
-            
-            window.dispatchEvent(new Event('firebase-ready'));
-        } catch (e) {
-            console.error("Firebase Compat Init Error:", e);
-            window.onerror(e.message, "firebase-init.js", 0, 0, e);
+        // Firebase Başlatma (Eğer başlatılmamışsa başlat)
+        if (!window.firebase.apps.length) {
+            window.firebase.initializeApp(firebaseConfig);
         }
-    </script>
+        const auth = window.firebase.auth();
+        const db = window.firebase.firestore();
 
-    <script type="text/babel" data-presets="env,react">
-        const { useState, useEffect } = React;
-
+        // SVG İkonlarımız
         const Icons = {
-            HeartCrack: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="m12 13-3-3 2-2-1.5-1.5"/></svg>,
-            Trash2: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>,
-            Zap: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
-            CheckCircle: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
-            Smile: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>,
-            Plus: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>,
-            Sparkles: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 5h4"/><path d="M3 9h4"/></svg>,
-            Search: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-            Share: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>,
-            Gift: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>,
-            Edit: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
-            Clock: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-            Refresh: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>,
-            X: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-            Check: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
-            Bot: (p) => <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2" /><circle cx="12" cy="5" r="2" /><path d="M12 7v4" /><line x1="8" y1="16" x2="8.01" y2="16" /><line x1="16" y1="16" x2="16.01" y2="16" /></svg>
+            HeartCrack: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="m12 13-3-3 2-2-1.5-1.5"/></svg>,
+            Trash2: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>,
+            Zap: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+            CheckCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+            X: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+            Bot: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg>,
+            Clock: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            Share: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         };
 
         const MOODS = [
-            { id: 'angry', emoji: '😡', label: 'Diloş Sinirli', bg: 'bg-red-50', border: 'border-red-200' },
-            { id: 'sad', emoji: '🥺', label: 'Ömoş Kırgın', bg: 'bg-blue-50', border: 'border-blue-200' },
-            { id: 'eyeroll', emoji: '🙄', label: 'Sabır Ver', bg: 'bg-amber-50', border: 'border-amber-200' },
-            { id: 'pensive', emoji: '😔', label: 'Boynum Bükük', bg: 'bg-indigo-50', border: 'border-indigo-200' },
-            { id: 'ignored', emoji: '😒', label: 'Soğuk Savaş', bg: 'bg-gray-50', border: 'border-gray-200' },
-            { id: 'fire', emoji: '🔥', label: 'Kıyamet', bg: 'bg-orange-50', border: 'border-orange-200' },
-            { id: 'cool', emoji: '😎', label: 'Yine Haklıyım', bg: 'bg-purple-50', border: 'border-purple-200' },
-            { id: 'ok', emoji: '👍', label: 'Peki 👍', bg: 'bg-emerald-50', border: 'border-emerald-200' }
+            { id: 'angry', emoji: '😡', label: 'Sinirli', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
+            { id: 'sad', emoji: '🥺', label: 'Kırgın', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600' },
+            { id: 'eyeroll', emoji: '🙄', label: 'Sabır Ver', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-600' },
+            { id: 'ignored', emoji: '😒', label: 'Soğuk', bg: 'bg-gray-50', border: 'border-gray-300', text: 'text-gray-600' }
         ];
 
-        const WHEEL_OPTIONS = ["Öpücük 😘", "Starbucks ☕", "3 saat trip ⏰", "Waffle 🧇", "Sarılmak 🤗", "Sephora 💄", "Masaj 💆‍♂️", "Barış! 🎉"];
+        const WHEEL_OPTIONS = ["Öpücük 😘", "Starbucks ☕", "Tatlı/Waffle 🧇", "Sarılmak 🤗", "Masaj 💆‍♂️", "Çiçek Al 💐", "Haklısın De 👍", "Barış! 🎉"];
 
+        // Toast Bildirim Bileşeni
         const Toast = ({ message, type, onClose }) => {
-            const bgClass = type === 'error' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600';
-            const Icon = type === 'error' ? Icons.X : Icons.Check;
+            const isError = type === 'error';
             return (
-                <div className={`toast-enter fixed top-4 right-4 z-[9999] flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border ${bgClass} backdrop-blur-md`}>
-                    <Icon size={18} />
+                <div className={`toast-enter fixed top-4 right-4 z-[9999] flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl border backdrop-blur-md ${isError ? 'bg-red-50 border-red-200 text-red-600' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                    {isError ? <Icons.X /> : <Icons.CheckCircle />}
                     <span className="text-sm font-bold">{message}</span>
-                    <button onClick={onClose} className="opacity-50 hover:opacity-100 ml-2"><Icons.X size={14}/></button>
+                    <button onClick={onClose} className="opacity-50 hover:opacity-100 ml-2"><Icons.X /></button>
                 </div>
             );
         };
 
-        function KrizSüresi({ timestamp }) {
+        // Küs Kalma Süresi Hesaplayıcı Bileşeni
+        function TripTimer({ timestamp }) {
             const [timeText, setTimeText] = useState("");
             useEffect(() => {
                 if (!timestamp) return;
                 const calculate = () => {
-                    const diffMs = Date.now() - (timestamp.seconds * 1000);
+                    const ts = typeof timestamp.toMillis === 'function' ? timestamp.toMillis() : (timestamp.seconds * 1000);
+                    const diffMs = Date.now() - ts;
                     const mins = Math.floor(diffMs / 60000);
                     const hrs = Math.floor(mins / 60);
                     const days = Math.floor(hrs / 24);
@@ -245,430 +177,442 @@
                     else setTimeText("Az önce başladı");
                 };
                 calculate();
-                const interval = setInterval(calculate, 30000);
+                const interval = setInterval(calculate, 30000); // 30 saniyede bir güncelle
                 return () => clearInterval(interval);
             }, [timestamp]);
+
             if (!timeText) return null;
-            return <span className="text-[10px] font-black bg-rose-50 text-rose-500 px-2 py-0.5 rounded-md flex items-center gap-1 border border-rose-100"><Icons.Clock size={11} className="animate-pulse" />{timeText}</span>;
-        }
-
-        function MoodAnalyzerBar({ trips }) {
-            const activeTrips = trips.filter(t => !t.resolved);
-            const total = activeTrips.length;
-            if (total === 0) return null;
-            const counts = MOODS.map(m => {
-                const num = activeTrips.filter(t => t.mood?.id === m.id).length;
-                return { ...m, num, pct: (num / total) * 100 };
-            }).filter(item => item.num > 0);
-
             return (
-                <div className="bg-white/75 backdrop-blur-sm rounded-2xl p-4 shadow-sm border border-pink-50">
-                    <h4 className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Aktif Hissiyat</h4>
-                    <div className="flex h-3 w-full rounded-full overflow-hidden bg-slate-100 mb-2">
-                        {counts.map(c => <div key={c.id} style={{ width: `${c.pct}%` }} className={`${c.bg.replace('-50', '-400')} transition-all`} />)}
-                    </div>
-                </div>
+                <span className="text-[10px] font-black bg-rose-50 text-rose-500 px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-rose-100 mt-1">
+                    <Icons.Clock /> {timeText}
+                </span>
             );
         }
 
-        function AfCarkiModal({ isOpen, onClose, addToast }) {
+        // Kader Çarkı Bileşeni
+        function WheelModal({ isOpen, onClose, addToast }) {
             const [spinning, setSpinning] = useState(false);
             const [rotation, setRotation] = useState(0);
             const [result, setResult] = useState("");
 
             if (!isOpen) return null;
 
-            const handleSpin = () => {
+            const spinWheel = () => {
                 if (spinning) return;
                 setSpinning(true); setResult("");
-                const randomDegrees = Math.floor(Math.random() * 360) + 1440;
+                const randomDegrees = Math.floor(Math.random() * 360) + 1440; // En az 4 tur
                 const newRotation = rotation + randomDegrees;
                 setRotation(newRotation);
+                
                 setTimeout(() => {
                     setSpinning(false);
-                    const index = Math.floor(((360 - (newRotation % 360) + (360/WHEEL_OPTIONS.length)/2) % 360) / (360/WHEEL_OPTIONS.length));
-                    const selectedOption = WHEEL_OPTIONS[index];
-                    setResult(selectedOption);
-                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                    addToast(`Kader Belirlendi: ${selectedOption}! 🎡`);
+                    const sliceAngle = 360 / WHEEL_OPTIONS.length;
+                    const normalizedRotation = newRotation % 360;
+                    // Çarkın en üstteki (pointer'ın gösterdiği) dilimini hesapla
+                    const index = Math.floor((360 - normalizedRotation + (sliceAngle / 2)) % 360 / sliceAngle);
+                    const selected = WHEEL_OPTIONS[index];
+                    setResult(selected);
+                    if(window.confetti) window.confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+                    addToast(`Karar Verildi: ${selected} 🎡`);
                 }, 4000);
             };
 
             return (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-enter">
-                    <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 w-full max-w-sm border border-pink-100 shadow-2xl relative">
-                        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400"><Icons.X size={24} /></button>
-                        <h3 className="text-xl font-black text-center mb-6 bg-gradient-to-r from-rose-500 to-purple-600 bg-clip-text text-transparent italic">Kader Çarkı</h3>
-                        <div className="relative w-48 h-48 mx-auto mb-6 flex items-center justify-center">
-                            <div className="absolute top-0 z-30 text-rose-500 text-2xl transform -translate-y-2">▼</div>
-                            <div className="w-full h-full rounded-full border-4 border-rose-300 shadow-xl overflow-hidden relative wheel-spin flex items-center justify-center" style={{ transform: `rotate(${rotation}deg)` }}>
-                                {WHEEL_OPTIONS.map((opt, i) => (
-                                    <div key={i} className="absolute h-full w-full origin-center flex justify-center text-[8px] font-bold" style={{ transform: `rotate(${i * (360/WHEEL_OPTIONS.length)}deg)` }}>
-                                        <span className="mt-4">{opt}</span>
-                                    </div>
-                                ))}
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-enter">
+                    <div className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-2xl relative">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-rose-500"><Icons.X /></button>
+                        <h3 className="text-xl font-black text-center mb-6 text-rose-500 italic">Kader Çarkı</h3>
+                        
+                        <div className="relative w-56 h-56 mx-auto mb-6 flex items-center justify-center">
+                            <div className="absolute -top-3 z-30 text-rose-500 text-3xl transform">▼</div>
+                            <div className="w-full h-full rounded-full border-[6px] border-rose-200 shadow-inner overflow-hidden relative wheel-spin flex items-center justify-center" style={{ transform: `rotate(${rotation}deg)` }}>
+                                {WHEEL_OPTIONS.map((opt, i) => {
+                                    const angle = i * (360 / WHEEL_OPTIONS.length);
+                                    return (
+                                        <div key={i} className="absolute h-full w-full origin-center flex justify-center text-[10px] font-bold text-slate-700" style={{ transform: `rotate(${angle}deg)` }}>
+                                            <span className="mt-4">{opt}</span>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
-                        {result && <div className="text-center bg-rose-50 p-3 rounded-xl mb-4 font-bold text-rose-600">{result}</div>}
-                        <button onClick={handleSpin} disabled={spinning} className="w-full bg-rose-500 text-white font-bold py-3 rounded-xl shadow-lg">{spinning ? "DÖNÜYOR..." : "ÇEVİR"}</button>
+                        
+                        {result && <div className="text-center bg-rose-50 border border-rose-100 p-3 rounded-xl mb-4 font-bold text-rose-600 animate-enter">{result}</div>}
+                        <button onClick={spinWheel} disabled={spinning} className={`w-full py-3.5 rounded-xl font-bold text-white shadow-lg transition-all ${spinning ? 'bg-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-rose-500 to-purple-500 hover:scale-[1.02]'}`}>
+                            {spinning ? "DÖNÜYOR..." : "ÇARK'I ÇEVİR"}
+                        </button>
                     </div>
                 </div>
             );
         }
 
-        function GeminiAiModal({ isOpen, onClose, tripReason, tripAction, addToast }) {
+        // Gemini AI Özür Asistanı Bileşeni
+        function GeminiModal({ isOpen, onClose, trip, addToast }) {
             const [aiMessage, setAiMessage] = useState("");
-            const [aiLoading, setAiLoading] = useState(false);
-            const [aiError, setAiError] = useState(null);
+            const [loading, setLoading] = useState(false);
 
-            useEffect(() => { if (isOpen && tripReason) generateApology(); }, [isOpen, tripReason]);
+            useEffect(() => { 
+                if (isOpen && trip) generateMessage(); 
+            }, [isOpen, trip]);
 
-            const generateApology = async () => {
-                setAiLoading(true); setAiMessage(""); setAiError(null);
-                const apiKey = window.APP_CONFIG.geminiApiKey; 
-                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const generateMessage = async () => {
+                setLoading(true); setAiMessage("");
+                const prompt = `Sevgilim bana şu sebepten dolayı trip atıyor: "${trip.reason}". Uyguladığı ceza ise: "${trip.action}". Şiddeti ise 10 üzerinden ${trip.intensity}. Kendimi affettirmek için ona samimi, biraz esprili, içinde bol sevgi olan bir özür mesajı yazar mısın? Sadece mesajı ver.`;
+                
                 try {
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
                     const res = await fetch(endpoint, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: `Diloş bana şu sebepten trip atıyor: "${tripReason}". Uyguladığı ceza ise: "${tripAction}". Ona kendimi affettirebileceğim, içinde bolca sevgi barındıran ama aynı zamanda yüzünü güldürecek, komik ve samimi bir özür mesajı yazar mısın? Sadece mesaj metnini ver.` }] }] })
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                     });
-                    if (!res.ok) throw new Error(`HTTP Hata: ${res.status}`);
+                    
+                    if (!res.ok) throw new Error("API Yanıt Vermedi");
                     const data = await res.json();
-                    if (data.error) throw new Error(data.error.message || "Bilinmeyen Gemini Hatası");
-                    setAiMessage(data.candidates?.[0]?.content?.parts?.[0]?.text || "Seni çok seviyorum ❤️");
-                } catch (err) { 
-                    setAiError(err.message);
-                    setAiMessage("Diloşum, hayatımın anlamı... Seni kırdığım için çok pişmanım. Dünyadaki en güzel çikolata ve kahvelerle kapına gelmeye hazırım, yeter ki o güzel yüzün bana yeniden gülsün! ❤️"); 
-                    addToast("Yapay zekaya bağlanılamadı. Varsayılan mesaj yüklendi.", "error");
-                } finally { setAiLoading(false); }
+                    setAiMessage(data.candidates[0].content.parts[0].text);
+                } catch (err) {
+                    setAiMessage("Hayatımın anlamı, seni kırdığım için çok üzgünüm. O güzel yüzün asılmasın, seni dünyalar kadar seviyorum! Affet beni ❤️");
+                    addToast("Yapay zekaya ulaşılamadı, varsayılan mesaj oluşturuldu.", "error");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const copyText = () => {
+                navigator.clipboard.writeText(aiMessage).then(() => {
+                    addToast("Mesaj kopyalandı! Gidip gönlünü al 🥰");
+                }).catch(() => {
+                    // Fallback for older browsers / iframes
+                    const temp = document.createElement("textarea");
+                    temp.value = aiMessage;
+                    document.body.appendChild(temp);
+                    temp.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(temp);
+                    addToast("Mesaj kopyalandı! Gidip gönlünü al 🥰");
+                });
             };
 
             if (!isOpen) return null;
 
-            const copyApology = () => {
-                const tempTextArea = document.createElement("textarea");
-                tempTextArea.value = aiMessage;
-                document.body.appendChild(tempTextArea);
-                tempTextArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempTextArea);
-                addToast("Özür mesajı kopyalandı! 📋", "success");
-            };
-
             return (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-enter">
-                    <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 w-full max-w-sm border border-pink-100 shadow-2xl relative">
-                        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400"><Icons.X size={24} /></button>
-                        <h3 className="text-center font-bold text-rose-500 mb-4">Gemini Gönül Alma Asistanı</h3>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-enter">
+                    <div className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-2xl relative">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-rose-500"><Icons.X /></button>
+                        <div className="flex items-center justify-center gap-2 mb-4 text-purple-600">
+                            <Icons.Bot />
+                            <h3 className="text-lg font-black italic">Yapay Zeka Asistanı</h3>
+                        </div>
                         
-                        <div className="bg-rose-50/50 p-4 rounded-2xl mb-2 text-xs italic leading-relaxed max-h-48 overflow-y-auto">
-                            {aiLoading ? "Gemini düşünüyor..." : aiMessage}
+                        <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl mb-4 text-sm font-medium text-slate-700 min-h-[120px] max-h-64 overflow-y-auto italic">
+                            {loading ? (
+                                <div className="flex flex-col items-center justify-center h-full text-purple-400 gap-2 opacity-70">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-500 border-t-transparent"></div>
+                                    <span>Gemini kelimeleri seçiyor...</span>
+                                </div>
+                            ) : aiMessage}
                         </div>
 
-                        {aiError && (
-                            <div className="p-2 mb-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-[10px] font-mono break-all">
-                                <b>Bağlantı Hatası:</b> {aiError}
-                            </div>
-                        )}
-
-                        <button onClick={copyApology} disabled={aiLoading || !aiMessage} className="w-full bg-rose-500 text-white py-3 rounded-xl font-bold">Kopyala</button>
+                        <button onClick={copyText} disabled={loading || !aiMessage} className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition-colors">
+                            KOPYALA VE GÖNDER
+                        </button>
                     </div>
                 </div>
             );
         }
 
-        const MainComposition = () => {
+        // Ana Uygulama Bileşeni
+        const MainApp = () => {
+            // Durumlar (States)
             const [trips, setTrips] = useState([]);
-            const [filteredTrips, setFilteredTrips] = useState([]);
-            const [newReason, setNewReason] = useState("");
-            const [newAction, setNewAction] = useState("");
+            const [reason, setReason] = useState("");
+            const [action, setAction] = useState("");
             const [intensity, setIntensity] = useState(5);
-            const [selectedMood, setSelectedMood] = useState(MOODS[0]);
-            const [user, setUser] = useState(null);
-            const [loading, setLoading] = useState(true);
-            const [filter, setFilter] = useState('all'); 
-            const [searchTerm, setSearchTerm] = useState("");
+            const [mood, setMood] = useState(MOODS[0]);
+            
             const [toasts, setToasts] = useState([]);
+            const [activeTab, setActiveTab] = useState('active'); // active, resolved
+            
             const [wheelOpen, setWheelOpen] = useState(false);
-            const [editingId, setEditingId] = useState(null);
-            const [geminiOpen, setGeminiOpen] = useState(false);
-            const [activeGeminiTrip, setActiveGeminiTrip] = useState(null);
+            const [aiOpen, setAiOpen] = useState(false);
+            const [selectedTripForAi, setSelectedTripForAi] = useState(null);
             
-            // Canlı Hata Tespit State'leri (Hata kodlarını görselleştirmek için)
-            const [firebaseErrorCode, setFirebaseErrorCode] = useState(null);
-            const [firebaseRawErrorMessage, setFirebaseRawErrorMessage] = useState("");
-            const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+            const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
-            const fb = window.Firebase;
-            
+            // Toast Bildirimi Ekleme Fonksiyonu
             const addToast = (msg, type = 'success') => {
                 const id = Date.now();
                 setToasts(prev => [...prev, { id, msg, type }]);
                 setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
             };
 
+            // Bileşen Yüklendiğinde Auth ve Veritabanı Dinleyicilerini Başlat
             useEffect(() => {
-                if (!fb) return;
-                fb.signInAnonymously(fb.auth).catch(err => { 
-                    console.error("Giriş başarısız:", err); 
-                    setFirebaseErrorCode(err.code || "auth-error");
-                    setFirebaseRawErrorMessage(err.message || "");
-                    setLoading(false); 
+                // Anonim Giriş Yap
+                auth.signInAnonymously().catch(err => {
+                    addToast("Veritabanı bağlantı hatası: Anonim giriş iznini Firebase'den açmalısınız!", "error");
+                    console.error(err);
                 });
-                const unsubscribe = fb.onAuthStateChanged(fb.auth, (u) => { 
-                    setUser(u); 
-                    if(!u) setLoading(false); 
+
+                // Kimlik doğrulandığında verileri çek
+                const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        const unsubscribeDb = db.collection('omos_trips')
+                            .orderBy('timestamp', 'desc')
+                            .onSnapshot(
+                                (snapshot) => {
+                                    const tripData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                                    setTrips(tripData);
+                                },
+                                (err) => {
+                                    addToast("Veriler okunamadı. Firebase Rules ayarlarınızı kontrol edin.", "error");
+                                    console.error(err);
+                                }
+                            );
+                        return () => unsubscribeDb();
+                    }
                 });
-                return () => unsubscribe();
+                return () => unsubscribeAuth();
             }, []);
 
-            useEffect(() => {
-                if (!user || !fb) return;
-                const q = fb.query(fb.collection(fb.db, 'omos_trips'));
-                return fb.onSnapshot(q, (snapshot) => {
-                    const loadedTrips = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    loadedTrips.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-                    setTrips(loadedTrips);
-                    setFirebaseErrorCode(null); // Başarılı bağlantıda hatayı temizle
-                    setFirebaseRawErrorMessage("");
-                    setLoading(false);
-                }, (err) => {
-                    console.error("Firestore sync error:", err);
-                    setFirebaseErrorCode(err.code || "firestore-error");
-                    setFirebaseRawErrorMessage(err.message || "");
-                    setLoading(false);
-                });
-            }, [user]);
+            // Veritabanına Yeni Kayıt Ekle
+            const handleAdd = async (e) => {
+                e.preventDefault();
+                if (!reason.trim()) return addToast("Lütfen bir sebep girin!", "error");
+                if (!auth.currentUser) return addToast("Bağlantı bekleniyor...", "error");
 
-            useEffect(() => {
-                let result = trips;
-                if (filter === 'active') result = result.filter(t => !t.resolved);
-                else if (filter === 'resolved') result = result.filter(t => t.resolved);
-                
-                if (searchTerm) {
-                    const lower = searchTerm.toLowerCase();
-                    result = result.filter(t => t.reason.toLowerCase().includes(lower) || t.action.toLowerCase().includes(lower));
-                }
-                setFilteredTrips(result);
-            }, [trips, filter, searchTerm]);
-
-            const handleAddTrip = async () => {
-                if (!user) {
-                    addToast("Lütfen bağlantı hatasını düzeltin!", "error");
-                    return;
-                }
                 try {
-                    if (editingId) {
-                        await fb.updateDoc(fb.doc(fb.db, 'omos_trips', editingId), { reason: newReason, action: newAction, intensity, mood: selectedMood });
-                        setEditingId(null); addToast("Güncellendi!");
-                    } else {
-                        await fb.addDoc(fb.collection(fb.db, 'omos_trips'), { reason: newReason, action: newAction, date: new Date().toLocaleDateString('tr-TR'), intensity, mood: selectedMood, resolved: false, timestamp: fb.serverTimestamp(), creatorId: user.uid });
-                        addToast("Yayınlandı!");
+                    await db.collection('omos_trips').add({
+                        reason: reason,
+                        action: action || "Belirtilmedi",
+                        intensity: intensity,
+                        mood: mood,
+                        resolved: false,
+                        date: new Date().toLocaleDateString('tr-TR'),
+                        timestamp: window.firebase.firestore.FieldValue.serverTimestamp(),
+                        uid: auth.currentUser.uid
+                    });
+                    
+                    setReason(""); setAction(""); setIntensity(5); setMood(MOODS[0]);
+                    addToast("Kriz başarıyla sisteme işlendi! 🚨");
+                } catch (error) {
+                    addToast("Kayıt başarısız oldu.", "error");
+                }
+            };
+
+            // Barışma (Resolve) Durumunu Değiştir
+            const toggleResolve = async (id, currentState) => {
+                try {
+                    await db.collection('omos_trips').doc(id).update({ resolved: !currentState });
+                    if (!currentState) { // Eğer barışıldıysa
+                        if(window.confetti) window.confetti({ particleCount: 150, spread: 60 });
+                        addToast("Harika! Barış sağlandı 🥰");
                     }
-                    setNewReason(""); setNewAction(""); setIntensity(5); setSelectedMood(MOODS[0]);
-                } catch (error) { 
-                    addToast("Kaydedilemedi!", "error"); 
-                    setFirebaseErrorCode(error.code || "write-error");
-                    setFirebaseRawErrorMessage(error.message || "");
+                } catch (error) {
+                    addToast("Durum güncellenemedi.", "error");
                 }
             };
 
-            const toggleResolve = async (id, currentStatus) => {
+            // Kayıt Silme İşlemi
+            const handleDelete = async (id) => {
                 try {
-                    await fb.updateDoc(fb.doc(fb.db, 'omos_trips', id), { resolved: !currentStatus });
-                    if(!currentStatus) { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); addToast("Barışıldı! 🎉"); }
-                } catch (e) { addToast("Hata!", "error"); }
-            };
-
-            const startEditing = (trip) => {
-                setEditingId(trip.id);
-                setNewReason(trip.reason);
-                setNewAction(trip.action);
-                setIntensity(trip.intensity);
-                setSelectedMood(trip.mood || MOODS[0]);
-                addToast("Kriz düzenleniyor... ✍️");
-            };
-
-            const triggerDelete = (id) => {
-                setConfirmDeleteId(id);
-            };
-
-            const performDelete = async (id) => {
-                try {
-                    await fb.deleteDoc(fb.doc(fb.db, 'omos_trips', id));
-                    addToast("Kayıt başarıyla silindi.");
-                    setConfirmDeleteId(null);
-                } catch(e) {
-                    addToast("Silinemedi!", "error");
+                    await db.collection('omos_trips').doc(id).delete();
+                    setDeleteConfirmId(null);
+                    addToast("Kayıt tarihin tozlu sayfalarına gömüldü.");
+                } catch (error) {
+                    addToast("Silinemedi.", "error");
                 }
             };
 
-            const handleShare = (trip) => {
-                const text = `📢 *ÖMOŞ & DİLOŞ TRİPMATİK* 📢\n\n🎯 *Olay Sebebi:* ${trip.reason}\n⚖️ *Uygulanan Tarife:* ${trip.action}\n🔥 *Kriz Şiddeti:* ${trip.intensity}/10\n\n_Bu bir resmi tebligattır, hızlıca barışılması rica olunur._`;
-                const tempTextArea = document.createElement("textarea");
-                tempTextArea.value = text;
-                document.body.appendChild(tempTextArea);
-                tempTextArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempTextArea);
-                addToast("Tebligat kopyalandı! 📋");
+            // WhatsApp/Mesaj Paylaşımı
+            const shareTrip = (trip) => {
+                const text = `📢 *ÖMOŞ & DİLOŞ TRİPMATİK* 📢\n\n🎯 *Olay:* ${trip.reason}\n⚖️ *Ceza:* ${trip.action}\n🔥 *Şiddet:* ${trip.intensity}/10\n\n_Hemen gönül alınması rica olunur!_`;
+                navigator.clipboard.writeText(text).then(() => {
+                    addToast("Tebligat kopyalandı! İstediğin yere yapıştır 📋");
+                }).catch(() => {
+                    // Fallback
+                    const temp = document.createElement("textarea");
+                    temp.value = text;
+                    document.body.appendChild(temp);
+                    temp.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(temp);
+                    addToast("Tebligat kopyalandı! 📋");
+                });
             };
+
+            // Filtrelenmiş Listeler
+            const displayTrips = trips.filter(t => activeTab === 'active' ? !t.resolved : t.resolved);
 
             return (
-                <div className="max-w-5xl mx-auto p-4 md:p-8 font-sans text-slate-800">
-                    <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2">
-                        {toasts.map(t => <Toast key={t.id} message={t.msg} type={t.type} onClose={() => setToasts(prev => prev.filter(i => i.id !== t.id))} />)}
-                    </div>
-                    
+                <div className="max-w-5xl mx-auto p-4 md:p-8 font-sans text-slate-800 min-h-screen pb-24">
+                    {/* Toast Konteyneri */}
+                    {toasts.map(t => <Toast key={t.id} message={t.msg} type={t.type} onClose={() => setToasts(prev => prev.filter(i => i.id !== t.id))} />)}
+
+                    {/* Başlık Alanı */}
                     <header className="text-center mb-10 relative z-10 animate-enter">
                         <div className="inline-flex relative mb-4">
                             <div className="absolute inset-0 bg-rose-400 blur-xl opacity-30 rounded-full animate-pulse"></div>
-                            <div className="relative bg-white p-5 rounded-full shadow-lg border-4 border-rose-50"><Icons.HeartCrack className="w-12 h-12 text-rose-500" /></div>
+                            <div className="relative bg-white p-4 rounded-full shadow-lg border-2 border-rose-100 text-rose-500">
+                                <Icons.HeartCrack />
+                            </div>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight italic">Ömoş & Diloş <span className="text-rose-500">Tripmatik</span></h1>
-                        <p className="text-slate-500 font-bold mt-2 text-md">v5.5 Limited Custom Edition</p>
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tight italic text-slate-800">
+                            Ömoş & Diloş <span className="text-rose-500">Tripmatik</span>
+                        </h1>
+                        <p className="text-slate-500 font-bold mt-2 tracking-widest text-sm">V6 PLATINUM EDITION</p>
                     </header>
 
-                    {/* Canlı Firebase Teşhis / Hata Bildirim Paneli */}
-                    {firebaseErrorCode && (
-                        <div className="mb-8 p-6 bg-red-50 border-2 border-dashed border-red-300 rounded-[32px] max-w-2xl mx-auto text-center shadow-lg animate-enter">
-                            <div className="text-4xl mb-2">⚠️</div>
-                            <h3 className="text-lg font-black text-red-700">Firebase Konsolunda Adımları Tamamlamadın!</h3>
-                            
-                            {/* Orijinal Hata Kodu Gösterim Alanı */}
-                            <div className="my-3 px-3 py-2 bg-red-100 rounded-xl inline-block text-xs font-mono text-red-800">
-                                <b>Hata Kodu (Code):</b> {firebaseErrorCode} <br />
-                                <b>Hata Mesajı:</b> {firebaseRawErrorMessage || "Detaylı mesaj dönmedi."}
-                            </div>
-
-                            <p className="text-sm text-slate-600 mt-2">
-                                Kod tarafındaki bağlantı ayarların mükemmel ama veritabanını aktif etmedin. Lütfen Firebase Console web sitesini aç ve şu adımları hemen yap:
-                            </p>
-                            <div className="text-xs text-left bg-white/80 p-4 rounded-2xl mt-4 border border-red-100 space-y-2">
-                                {firebaseErrorCode.includes("auth") || firebaseErrorCode.includes("operation-not-allowed") ? (
-                                    <>
-                                        <p className="font-bold text-red-600">Sorun: Anonim Giriş Kapalı</p>
-                                        <p>1. <a href="https://console.firebase.google.com" target="_blank" className="text-blue-500 underline">Firebase Console</a> sitesine git.</p>
-                                        <p>2. Projenden <b>Authentication</b> sayfasını aç.</p>
-                                        <p>3. <b>Sign-in method</b> sekmesine tıkla ve <b>Anonymous (Anonim)</b> girişi aktif edip kaydet.</p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <p className="font-bold text-red-600">Sorun: Veritabanı (Firestore Database) veya Kuralları Kapalı</p>
-                                        <p>1. Firebase projenin sol menüsünden <b>Firestore Database</b> sayfasını aç.</p>
-                                        <p>2. Eğer henüz oluşturmadıysan <b>Create Database</b> butonuna basıp veritabanını kur.</p>
-                                        <p>3. Sayfanın üstündeki <b>Rules (Kurallar)</b> sekmesine git.</p>
-                                        <p>4. Kuralları şu şekilde değiştirip <b>Publish (Yayınla)</b> yap:</p>
-                                        <pre className="bg-slate-800 text-green-400 p-2 rounded-xl mt-2 overflow-x-auto text-[10px]">
-{`rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
-    }
-  }
-}`}
-                                        </pre>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="grid lg:grid-cols-12 gap-8">
-                        {/* FORM PANELİ */}
-                        <div className="lg:col-span-5 space-y-6">
-                            <div className={`glass rounded-[32px] p-6 shadow-xl sticky top-6 border transition-all ${editingId ? 'ring-4 ring-yellow-400' : 'border-white/50'}`}>
-                                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                    <span className={`p-2 rounded-xl text-white ${editingId ? 'bg-yellow-500' : 'bg-rose-500'}`}>{editingId ? <Icons.Edit size={20}/> : <Icons.Zap size={20}/>}</span>
-                                    {editingId ? "Krizi Düzenle" : "Yeni Kriz"}
+                    <div className="grid lg:grid-cols-12 gap-8 relative z-10">
+                        
+                        {/* SOL PANEL: Yeni Trip Ekleme Formu */}
+                        <div className="lg:col-span-5">
+                            <form onSubmit={handleAdd} className="glass-panel p-6 md:p-8 rounded-[32px] sticky top-6 animate-enter" style={{animationDelay: '0.1s'}}>
+                                <h2 className="text-xl font-black mb-6 flex items-center gap-3">
+                                    <span className="bg-rose-500 text-white p-2.5 rounded-xl shadow-md"><Icons.Zap /></span>
+                                    Yeni Kriz Bildirimi
                                 </h2>
-                                <div className="grid grid-cols-4 gap-2 mb-6">
-                                    {MOODS.map(mood => (
-                                        <button key={mood.id} onClick={() => setSelectedMood(mood)} className={`p-2.5 rounded-2xl border-2 transition-all ${selectedMood.id === mood.id ? `${mood.bg} ${mood.border} scale-110 shadow-md` : 'bg-white border-transparent'}`}>
-                                            <span className="text-2xl">{mood.emoji}</span>
+
+                                {/* Duygu Seçimi */}
+                                <div className="grid grid-cols-4 gap-3 mb-6">
+                                    {MOODS.map(m => (
+                                        <button 
+                                            type="button" 
+                                            key={m.id} 
+                                            onClick={() => setMood(m)} 
+                                            className={`flex flex-col items-center p-3 rounded-2xl border-2 transition-all ${mood.id === m.id ? `${m.bg} ${m.border} scale-105 shadow-sm` : 'bg-white/60 border-transparent hover:bg-white'}`}
+                                        >
+                                            <span className="text-2xl mb-1">{m.emoji}</span>
+                                            <span className={`text-[10px] font-bold ${mood.id === m.id ? m.text : 'text-slate-400'}`}>{m.label}</span>
                                         </button>
                                     ))}
                                 </div>
+
+                                {/* Form Alanları */}
                                 <div className="space-y-4">
-                                    <textarea value={newReason} onChange={(e) => setNewReason(e.target.value)} className="w-full p-4 bg-white/50 border rounded-2xl text-sm outline-none h-24" placeholder="Olay ne?" />
-                                    <input type="text" value={newAction} onChange={(e) => setNewAction(e.target.value)} className="w-full p-4 bg-white/50 border rounded-2xl text-sm outline-none" placeholder="Cezası ne?" />
-                                    <div className="bg-white p-4 rounded-2xl border">
-                                        <div className="flex justify-between text-xs font-bold mb-2"><span>Şiddet</span><span className="text-rose-500">{intensity}/10</span></div>
-                                        <input type="range" min="1" max="10" value={intensity} onChange={(e) => setIntensity(Number(e.target.value))} />
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 ml-2 mb-1 block uppercase">Olay Ne?</label>
+                                        <textarea required value={reason} onChange={e => setReason(e.target.value)} className="w-full p-4 bg-white/80 border border-slate-200 rounded-2xl text-sm outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all resize-none h-24 shadow-inner" placeholder="Neden trip atılıyor detaylandır..."></textarea>
                                     </div>
-                                    <button onClick={handleAddTrip} disabled={!newReason} className={`w-full py-4 rounded-2xl text-white font-bold shadow-lg transition-all ${editingId ? 'bg-yellow-500' : 'bg-slate-800'}`}>
-                                        {editingId ? "GÜNCELLEMEYİ KAYDET" : "LİSTEYE İŞLE"}
+
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 ml-2 mb-1 block uppercase">Uygulanan Ceza</label>
+                                        <input type="text" value={action} onChange={e => setAction(e.target.value)} className="w-full p-4 bg-white/80 border border-slate-200 rounded-2xl text-sm outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all shadow-inner" placeholder="Örn: 2 saat konuşmamak, mesajlara geç dönmek" />
+                                    </div>
+
+                                    <div className="bg-white/80 p-5 rounded-2xl border border-slate-200 shadow-inner">
+                                        <div className="flex justify-between items-center text-sm font-black mb-4">
+                                            <span className="text-slate-600">Şiddet Seviyesi</span>
+                                            <span className="bg-rose-100 text-rose-600 px-3 py-1 rounded-lg">{intensity} / 10</span>
+                                        </div>
+                                        <input type="range" min="1" max="10" value={intensity} onChange={e => setIntensity(Number(e.target.value))} />
+                                    </div>
+
+                                    <button type="submit" className="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                                        <Icons.Zap /> SİSTEME İŞLE
                                     </button>
                                 </div>
-                            </div>
+                            </form>
                         </div>
 
-                        {/* LİSTE PANELİ */}
+                        {/* SAĞ PANEL: Listeleme ve Ekstralar */}
                         <div className="lg:col-span-7 space-y-6">
-                            <div className="glass p-4 rounded-3xl flex justify-between items-center border-pink-100">
-                                <div><h4 className="text-sm font-bold">Cezaya Karar Veremiyor Musun? 🎡</h4></div>
-                                <button onClick={() => setWheelOpen(true)} className="bg-rose-500 text-white font-bold text-xs px-4 py-2 rounded-full">ÇARK ÇEVİR</button>
+                            
+                            {/* Üst Araçlar: Çark */}
+                            <div className="glass-panel p-4 md:p-5 rounded-3xl flex justify-between items-center animate-enter" style={{animationDelay: '0.2s'}}>
+                                <div>
+                                    <h4 className="font-bold text-slate-800">Kararsız mısın?</h4>
+                                    <p className="text-xs font-medium text-slate-500">Cezayı veya barışma yöntemini çarka bırak.</p>
+                                </div>
+                                <button onClick={() => setWheelOpen(true)} className="bg-rose-500 hover:bg-rose-600 text-white font-black text-xs px-5 py-3 rounded-xl shadow-md transition-all active:scale-95">
+                                    ÇARK ÇEVİR 🎡
+                                </button>
                             </div>
-                            
-                            <MoodAnalyzerBar trips={trips} />
-                            
-                            <div className="flex bg-white p-1 rounded-xl shadow-sm border">
-                                {['all', 'active', 'resolved'].map(f => (
-                                    <button key={f} onClick={() => setFilter(f)} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${filter === f ? 'bg-rose-500 text-white shadow-md' : 'text-slate-400'}`}>
-                                        {f === 'all' ? 'Tümü' : f === 'active' ? 'Aktif' : 'Barışılanlar'}
-                                    </button>
-                                ))}
+
+                            {/* Sekmeler */}
+                            <div className="flex bg-white/60 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-white/50 animate-enter" style={{animationDelay: '0.3s'}}>
+                                <button onClick={() => setActiveTab('active')} className={`flex-1 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'active' ? 'bg-white text-rose-500 shadow-sm' : 'text-slate-400 hover:bg-white/40'}`}>
+                                    AKTİF KRİZLER ({trips.filter(t => !t.resolved).length})
+                                </button>
+                                <button onClick={() => setActiveTab('resolved')} className={`flex-1 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'resolved' ? 'bg-white text-emerald-500 shadow-sm' : 'text-slate-400 hover:bg-white/40'}`}>
+                                    BARIŞILANLAR ({trips.filter(t => t.resolved).length})
+                                </button>
                             </div>
-                            
-                            <div className="space-y-4 pb-24">
-                                {filteredTrips.map((trip, idx) => (
-                                    <div key={trip.id} className={`glass-card p-6 rounded-[28px] relative group transition-all duration-500 hover:z-10 ${trip.resolved ? 'opacity-75 grayscale-[0.5]' : ''}`} style={{animation: `fadeInUp 0.5s forwards ${idx * 0.05}s`}}>
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="text-4xl">{trip.mood?.emoji}</div>
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase">{trip.date}</span>
-                                                    {!trip.resolved && <KrizSüresi timestamp={trip.timestamp} />}
+
+                            {/* Trip Listesi */}
+                            <div className="space-y-4">
+                                {displayTrips.length === 0 ? (
+                                    <div className="text-center p-10 bg-white/50 rounded-3xl border border-dashed border-slate-300">
+                                        <div className="text-4xl mb-3 opacity-50">🕊️</div>
+                                        <p className="text-slate-500 font-bold text-sm">Burada şu an her şey güllük gülistanlık...</p>
+                                    </div>
+                                ) : (
+                                    displayTrips.map((trip, idx) => (
+                                        <div key={trip.id} className={`glass-card p-6 rounded-[28px] animate-enter ${trip.resolved ? 'opacity-80 grayscale-[0.2]' : ''}`} style={{animationDelay: `${0.1 * idx}s`}}>
+                                            
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex gap-4">
+                                                    <div className="text-5xl drop-shadow-sm">{trip.mood?.emoji}</div>
+                                                    <div className="flex flex-col pt-1">
+                                                        <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase mb-1">{trip.date}</span>
+                                                        {!trip.resolved && <TripTimer timestamp={trip.timestamp} />}
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Aksiyon Butonları */}
+                                                <div className="flex items-center gap-1.5">
+                                                    {!trip.resolved && (
+                                                        <button onClick={() => { setSelectedTripForAi(trip); setAiOpen(true); }} className="p-2.5 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors tooltip" title="Yapay Zeka Özür Metni">
+                                                            <Icons.Bot />
+                                                        </button>
+                                                    )}
+                                                    <button onClick={() => shareTrip(trip)} className="p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors tooltip" title="Tebligat Paylaş">
+                                                        <Icons.Share />
+                                                    </button>
+                                                    <button onClick={() => toggleResolve(trip.id, trip.resolved)} className={`p-2.5 rounded-xl transition-colors tooltip ${trip.resolved ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`} title={trip.resolved ? "Geri Al" : "Barışıldı!"}>
+                                                        <Icons.CheckCircle />
+                                                    </button>
+                                                    
+                                                    {/* Güvenli Silme Butonu */}
+                                                    {deleteConfirmId === trip.id ? (
+                                                        <div className="flex items-center gap-1 bg-red-100 p-1 rounded-xl ml-1">
+                                                            <button onClick={() => handleDelete(trip.id)} className="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm">SİL</button>
+                                                            <button onClick={() => setDeleteConfirmId(null)} className="bg-white text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded-lg">İPTAL</button>
+                                                        </div>
+                                                    ) : (
+                                                        <button onClick={() => setDeleteConfirmId(trip.id)} className="p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors ml-1 tooltip" title="Kaydı Sil">
+                                                            <Icons.Trash2 />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
-                                            <div className="flex gap-2">
-                                                <button onClick={() => handleShare(trip)} className="p-2 rounded-xl bg-indigo-50 text-indigo-500 hover:bg-indigo-100 transition-colors shadow-sm" title="Paylaş"><Icons.Share size={18}/></button>
-                                                {!trip.resolved && (
-                                                    <button onClick={() => { setActiveGeminiTrip(trip); setGeminiOpen(true); }} className="p-2 rounded-xl bg-rose-50 text-rose-500 shadow-sm" title="Yapay Zeka ile Gönül Al"><Icons.Bot size={18}/></button>
-                                                )}
-                                                {!trip.resolved && <button onClick={() => startEditing(trip)} className="p-2 rounded-xl bg-yellow-50 text-yellow-600 shadow-sm" title="Düzenle"><Icons.Edit size={18}/></button>}
-                                                <button onClick={() => toggleResolve(trip.id, trip.resolved)} className={`p-2 rounded-xl transition-colors shadow-sm ${trip.resolved ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`} title="Barış"><Icons.CheckCircle size={18}/></button>
-                                                
-                                                {/* Onaylı Silme Mekanizması */}
-                                                {confirmDeleteId === trip.id ? (
-                                                    <div className="flex gap-1 items-center bg-red-100 rounded-xl px-2 py-1">
-                                                        <span className="text-[9px] font-bold text-red-700">Sil?</span>
-                                                        <button onClick={() => performDelete(trip.id)} className="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded font-bold">Evet</button>
-                                                        <button onClick={() => setConfirmDeleteId(null)} className="bg-slate-300 text-slate-700 text-[9px] px-2 py-0.5 rounded font-bold">Hayır</button>
-                                                    </div>
-                                                ) : (
-                                                    <button onClick={() => triggerDelete(trip.id)} className="p-2 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition-colors shadow-sm"><Icons.Trash2 size={18}/></button>
-                                                )}
+                                            
+                                            <h3 className={`text-lg md:text-xl font-black text-slate-800 leading-tight mb-4 ${trip.resolved ? 'line-through decoration-emerald-400 decoration-2 opacity-70' : ''}`}>
+                                                {trip.reason}
+                                            </h3>
+                                            
+                                            <div className="flex items-center gap-3 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100">
+                                                <div className="bg-white px-2 py-1 rounded-lg text-[10px] font-black tracking-wider text-slate-400 border shadow-sm">CEZA</div>
+                                                <div className="text-sm font-bold text-slate-700">{trip.action}</div>
                                             </div>
                                         </div>
-                                        <h3 className={`text-lg font-bold mb-3 ${trip.resolved ? 'line-through decoration-emerald-300' : ''}`}>{trip.reason}</h3>
-                                        <div className="bg-rose-50/30 border p-4 rounded-2xl text-sm"><span className="font-bold text-xs uppercase opacity-60 block mb-1">Ceza:</span> {trip.action}</div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
                     
-                    <AfCarkiModal isOpen={wheelOpen} onClose={() => setWheelOpen(false)} addToast={addToast} />
-                    <GeminiAiModal isOpen={geminiOpen} onClose={() => setGeminiOpen(false)} tripReason={activeGeminiTrip?.reason} tripAction={activeGeminiTrip?.action} addToast={addToast} />
+                    {/* Modallar */}
+                    <WheelModal isOpen={wheelOpen} onClose={() => setWheelOpen(false)} addToast={addToast} />
+                    <GeminiModal isOpen={aiOpen} onClose={() => setAiOpen(false)} trip={selectedTripForAi} addToast={addToast} />
                 </div>
             );
-        }
-        
-        const initApp = () => { ReactDOM.createRoot(document.getElementById('root')).render(<MainComposition />); };
-        if (window.Firebase) initApp(); else window.addEventListener('firebase-ready', initApp);
+        };
+
+        // React'i Ekrana Çiz (Modül kullanmadan, tamamen standart yolla)
+        const container = document.getElementById('root');
+        const root = window.ReactDOM.createRoot(container);
+        root.render(<MainApp />);
     </script>
 </body>
 </html>
