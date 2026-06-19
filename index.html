@@ -96,7 +96,7 @@
 
     <!-- DİKKAT: data-presets="react" diyerek Babel'in gizli import eklemesi engellenmiştir! -->
     <script type="text/babel" data-presets="react">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo } = React;
 
         // YENİ FİREBASE VERİTABANI BİLGİLERİ (tripmatikdata)
         const firebaseConfig = {
@@ -280,7 +280,7 @@
                 temp.value = aiMessage;
                 document.body.appendChild(temp);
                 temp.select();
-                document.execCommand("copy");
+                navigator.clipboard.writeText(temp.value);
                 document.body.removeChild(temp);
                 props.addToast("Mesaj kopyalandı! Gidip gönlünü al 🥰");
             };
@@ -346,13 +346,15 @@
             };
 
             useEffect(() => {
+                let unsubscribeDb = null;
                 auth.signInAnonymously().catch(function(err) {
                     setDbError("Auth Hatası: " + err.message);
                 });
 
                 const unsubscribeAuth = auth.onAuthStateChanged(function(user) {
                     if (user) {
-                        const unsubscribeDb = db.collection('omos_trips')
+                        if (unsubscribeDb) unsubscribeDb();
+                        unsubscribeDb = db.collection('omos_trips')
                             .orderBy('timestamp', 'desc')
                             .onSnapshot(
                                 function(snapshot) {
@@ -366,10 +368,12 @@
                                     setDbError("Okuma Hatası: " + err.message);
                                 }
                             );
-                        return function() { unsubscribeDb(); };
                     }
                 });
-                return function() { unsubscribeAuth(); };
+                return function() {
+                    if (unsubscribeDb) unsubscribeDb();
+                    unsubscribeAuth();
+                };
             }, []);
 
             const handleAdd = function(e) {
@@ -437,7 +441,7 @@
                 temp.value = text;
                 document.body.appendChild(temp);
                 temp.select();
-                document.execCommand("copy");
+                navigator.clipboard.writeText(temp.value);
                 document.body.removeChild(temp);
                 addToast("Tebligat kopyalandı! İstediğin yere yapıştır 📋");
             };
